@@ -1,0 +1,18 @@
+CREATE TYPE status AS ENUM ('on', 'off');
+
+DROP TABLE IF EXISTS systems;
+
+CREATE TABLE systems (
+  id SERIAL PRIMARY KEY NOT NULL,
+  system_uid UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+  name VARCHAR(250) NOT NULL UNIQUE,
+  placed VARCHAR(300) NOT NULL,
+  system_maker UUID NOT NULL,
+  image_uri VARCHAR(300),
+  status status NOT NULL DEFAULT 'on',
+  aplication_id VARCHAR(300) UNIQUE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (system_maker) REFERENCES users (user_uid)
+);

@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model notifications {
+  id                                  Int      @id @default(autoincrement())
+  notification_uid                    String   @unique @default(uuid()) @db.Uuid
+  title                               String   @db.VarChar(100)
+  message                             String   @db.VarChar(300)
+  read                                Boolean  @default(false)
+  to_uid                              String   @db.Uuid
+  from_uid                            String   @db.Uuid
+  created_at                          DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                          DateTime @default(now()) @db.Timestamptz(6)
+  users_notifications_from_uidTousers users    @relation("notifications_from_uidTousers", fields: [from_uid], references: [user_uid])
+  users_notifications_to_uidTousers   users    @relation("notifications_to_uidTousers", fields: [to_uid], references: [user_uid])
+}
+
+model systems {
+  id              Int               @id @default(autoincrement())
+  system_uid      String            @unique @default(uuid()) @db.Uuid
+  name            String            @unique @db.VarChar(250)
+  placed          String            @db.VarChar(300)
+  system_maker    String            @db.Uuid
+  image_uri       String?           @db.VarChar(300)
+  status          status            @default(on)
+  aplication_id   String?           @unique @db.VarChar(300)
+  created_at      DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime          @default(now()) @db.Timestamptz(6)
+  users           users             @relation(fields: [system_maker], references: [user_uid])
+  usersystemlinks usersystemlinks[]
+}
+
+model users {
+  id                                          Int               @id @default(autoincrement())
+  user_uid                                    String            @unique @default(uuid()) @db.Uuid
+  username                                    String            @unique @db.VarChar(250)
+  email                                       String            @unique @db.VarChar(300)
+  password                                    String            @db.VarChar(300)
+  user_role                                   role              @default(user)
+  image_uri                                   String?           @db.VarChar(300)
+  confirmed                                   Boolean           @default(false)
+  created_at                                  DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime          @default(now()) @db.Timestamptz(6)
+  notifications_notifications_from_uidTousers notifications[]   @relation("notifications_from_uidTousers")
+  notifications_notifications_to_uidTousers   notifications[]   @relation("notifications_to_uidTousers")
+  systems                                     systems[]
+  usersystemlinks                             usersystemlinks[]
+}
+
+model usersystemlinks {
+  id                  Int      @id @default(autoincrement())
+  usersystemlinks_uid String   @unique @default(uuid()) @db.Uuid
+  user_uid            String   @db.Uuid
+  system_uid          String   @db.Uuid
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime @default(now()) @db.Timestamptz(6)
+  system_role         role     @default(admin)
+  systems             systems  @relation(fields: [system_uid], references: [system_uid])
+  users               users    @relation(fields: [user_uid], references: [user_uid])
+}
+
+enum role {
+  user
+  admin
+  superadmin
+}
+
+enum status {
+  on
+  off
+}
