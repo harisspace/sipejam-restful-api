@@ -73,10 +73,9 @@ export class UserController {
   ) {
     const { user, token } = await this.userService.signInUser(signInUserDto);
     // set cookie
-    console.log(this.configService.get<string>('NODE_ENV'));
     res.cookie('token', token, {
       path: '/',
-      maxAge: 60480000,
+      maxAge: 6048000000,
       sameSite: 'strict',
       httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
