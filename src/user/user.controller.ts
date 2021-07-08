@@ -76,7 +76,7 @@ export class UserController {
     res.cookie('token', token, {
       path: '/',
       maxAge: 6048000000,
-      sameSite: 'strict',
+      sameSite: 'none',
       httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
     });
