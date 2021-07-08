@@ -12,7 +12,7 @@ async function bootstrap() {
     allowedHeaders:
       'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe',
     methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
-    origin: configService.get('CLIENT_DOMAIN'),
+    origin: '*',
     credentials: true,
   });
   app.useWebSocketAdapter(new WsAdapter(app));
