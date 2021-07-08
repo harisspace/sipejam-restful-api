@@ -6,15 +6,8 @@ import * as cookieParser from 'cookie-parser';
 import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   const configService = app.get(ConfigService);
-  app.enableCors({
-    allowedHeaders:
-      'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe',
-    methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
-    origin: true,
-    credentials: true,
-  });
   app.useWebSocketAdapter(new WsAdapter(app));
   app.use(cookieParser());
   app.setGlobalPrefix('/v1/api');
