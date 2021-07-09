@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -114,8 +115,20 @@ export class SystemService {
   async updateSystem(
     data: Prisma.systemsUpdateInput,
     systemWhereUniqueInput: Prisma.systemsWhereUniqueInput,
+    imageFile: Express.Multer.File,
   ) {
-    return this.prisma.systems.update({ data, where: systemWhereUniqueInput });
+    let system: systems;
+    try {
+      system = await this.prisma.systems.update({
+        data: { ...data, image_uri: imageFile.filename },
+        where: systemWhereUniqueInput,
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError)
+        throw new ConflictException('Invalid name already exist');
+      throw new InternalServerErrorException();
+    }
+    return system;
   }
 
   async requestToBeAdmin(data: Prisma.notificationsCreateManyInput) {

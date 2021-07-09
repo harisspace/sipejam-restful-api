@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateSystemDto {
   @IsNotEmpty()
@@ -15,7 +15,12 @@ export class CreateSystemDto {
 }
 
 export class UpdateSystemDto {
+  @IsOptional()
+  @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsString()
   placed?: string;
 }
 

@@ -69,7 +69,6 @@ export class SystemController {
     @Body() createSystemDto: CreateSystemDto,
     @UploadedFile() image: Express.Multer.File,
   ) {
-    console.log(image);
     return this.systemService.createSystem(createSystemDto, image);
   }
 
@@ -80,26 +79,33 @@ export class SystemController {
     return this.systemService.deleteSystem({ system_uid });
   }
 
-  @Patch('update/:system_uid')
-  @Roles('superadmin', 'admin')
-  @UseGuards(AuthGuard, AdminSystemRestrictGuard)
-  updateSystem(
-    @Param('system_uid') system_uid: string,
-    @Body() updateSystemDto: UpdateSystemDto,
-  ) {
-    return this.systemService.updateSystem(updateSystemDto, { system_uid });
-  }
-
-  @Post('/join')
+  @Post('join')
   @UseGuards(AuthGuard)
   requestToBeAdmin(@Body() requestToBeAdminDto: RequestToBeAdminDto) {
     return this.systemService.requestToBeAdmin(requestToBeAdminDto);
   }
 
-  @Post('/add')
+  @Post('add')
   @Roles('superadmin')
   @UseGuards(RolesGuard)
   addAdmin(@Body() addAdminDto: AddAdminDto) {
     return this.systemService.addAdmin(addAdminDto);
+  }
+
+  @Patch('update/:system_uid')
+  @Roles('superadmin', 'admin')
+  @UseGuards(AuthGuard, AdminSystemRestrictGuard)
+  @UseInterceptors(FileInterceptor('image'))
+  updateSystem(
+    @Param('system_uid') system_uid: string,
+    @Body() updateSystemDto: UpdateSystemDto,
+    @UploadedFile() imageFile: Express.Multer.File,
+  ) {
+    console.log(imageFile);
+    return this.systemService.updateSystem(
+      updateSystemDto,
+      { system_uid },
+      imageFile,
+    );
   }
 }
