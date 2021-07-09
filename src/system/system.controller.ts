@@ -18,6 +18,7 @@ import { AuthGuard } from 'src/user/guards/auth.guard';
 import { RolesGuard } from 'src/user/guards/roles.guard';
 import { AdminSystemRestrictGuard } from './guard/admin-system-restrict.guard';
 import { SystemMakerRestrictGuard } from './guard/system-maker-restrict.guard';
+import { UnlinkStaticFilesInterceptor } from './interceptor/unlink-static-files.interceptor';
 import { SystemService } from './services/system.service';
 import {
   AddAdminDto,
@@ -95,13 +96,12 @@ export class SystemController {
   @Patch('update/:system_uid')
   @Roles('superadmin', 'admin')
   @UseGuards(AuthGuard, AdminSystemRestrictGuard)
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('image'), UnlinkStaticFilesInterceptor)
   updateSystem(
     @Param('system_uid') system_uid: string,
     @Body() updateSystemDto: UpdateSystemDto,
     @UploadedFile() imageFile: Express.Multer.File,
   ) {
-    console.log(imageFile);
     return this.systemService.updateSystem(
       updateSystemDto,
       { system_uid },
