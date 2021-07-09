@@ -35,4 +35,18 @@ export class RequestToBeAdminDto {
   @IsNotEmpty()
   @IsString()
   to_uid: string;
+
+  @IsNotEmpty()
+  @IsString()
+  payload: string;
+}
+
+export class AddAdminDto {
+  @IsNotEmpty()
+  @IsString()
+  user_uid: string;
+
+  @IsNotEmpty()
+  @IsString()
+  system_uid: string;
 }

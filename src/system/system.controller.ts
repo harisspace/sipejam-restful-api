@@ -16,9 +16,11 @@ import { SelectUser } from 'src/interface/user.interface';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { AuthGuard } from 'src/user/guards/auth.guard';
 import { RolesGuard } from 'src/user/guards/roles.guard';
-import { HelperService } from './services/helper.service';
+import { AdminSystemRestrictGuard } from './guard/admin-system-restrict.guard';
+import { SystemMakerRestrictGuard } from './guard/system-maker-restrict.guard';
 import { SystemService } from './services/system.service';
 import {
+  AddAdminDto,
   CreateSystemDto,
   RequestToBeAdminDto,
   UpdateSystemDto,
@@ -26,10 +28,7 @@ import {
 
 @Controller('system')
 export class SystemController {
-  constructor(
-    private systemService: SystemService,
-    private helperService: HelperService,
-  ) {}
+  constructor(private systemService: SystemService) {}
 
   @Get()
   @UseGuards(AuthGuard)
@@ -74,38 +73,33 @@ export class SystemController {
     return this.systemService.createSystem(createSystemDto, image);
   }
 
-  @Delete('delete/:systemUid')
+  @Delete('delete/:system_uid')
   @Roles('superadmin')
-  @UseGuards(RolesGuard)
-  deleteSystem(@Req() req: any, @Param('systemUid') systemUid: string) {
-    const { user_uid } = req.user;
-    return this.systemService.deleteSystem(user_uid, { system_uid: systemUid });
+  @UseGuards(RolesGuard, SystemMakerRestrictGuard)
+  deleteSystem(@Req() req: any, @Param('system_uid') system_uid: string) {
+    return this.systemService.deleteSystem({ system_uid });
   }
 
-  @Patch('update/:systemUid')
+  @Patch('update/:system_uid')
   @Roles('superadmin', 'admin')
+  @UseGuards(AuthGuard, AdminSystemRestrictGuard)
   updateSystem(
-    @Req() req: any,
-    @Param('systemUid') system_uid: string,
+    @Param('system_uid') system_uid: string,
     @Body() updateSystemDto: UpdateSystemDto,
   ) {
-    const { user_uid } = req.user;
-    return this.systemService.updateSystem(
-      updateSystemDto,
-      { system_uid },
-      user_uid,
-    );
+    return this.systemService.updateSystem(updateSystemDto, { system_uid });
   }
 
   @Post('/join')
   @UseGuards(AuthGuard)
-  requestToBeAdmin(
-    @Req() req: any,
-    @Body() requestToBeAdminDto: RequestToBeAdminDto,
-  ) {
+  requestToBeAdmin(@Body() requestToBeAdminDto: RequestToBeAdminDto) {
     return this.systemService.requestToBeAdmin(requestToBeAdminDto);
   }
 
-  // @Post('/add/:systemUid')
-  // addAdmin() {}
+  @Post('/add')
+  @Roles('superadmin')
+  @UseGuards(RolesGuard)
+  addAdmin(@Body() addAdminDto: AddAdminDto) {
+    return this.systemService.addAdmin(addAdminDto);
+  }
 }

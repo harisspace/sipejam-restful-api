@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, systems } from '@prisma/client';
@@ -94,44 +95,49 @@ export class SystemService {
     return system;
   }
 
-  async deleteSystem(
-    system_maker_uid: string,
-    systemWhereUniqueInput: Prisma.systemsWhereUniqueInput,
-  ) {
-    const isUserMaker = await this.prisma.systems.findFirst({
-      where: {
-        system_maker: system_maker_uid,
-        ...systemWhereUniqueInput,
-      },
-    });
-    if (!isUserMaker)
-      throw new ForbiddenException("You're not allowed delete this system");
-    return this.prisma.systems.delete({ where: systemWhereUniqueInput });
+  async deleteSystem(systemWhereUniqueInput: Prisma.systemsWhereUniqueInput) {
+    let system: systems;
+
+    try {
+      system = await this.prisma.systems.delete({
+        where: systemWhereUniqueInput,
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new NotFoundException('System not found, cannot delete');
+      }
+      throw new InternalServerErrorException();
+    }
+    return system;
   }
 
   async updateSystem(
     data: Prisma.systemsUpdateInput,
     systemWhereUniqueInput: Prisma.systemsWhereUniqueInput,
-    user_uid: string,
   ) {
-    const isUserMaker = await this.prisma.usersystemlinks.findFirst({
-      where: {
-        ...systemWhereUniqueInput, // system_uid
-        user_uid,
-      },
-    });
-    if (!isUserMaker)
-      throw new ForbiddenException("You're not allowed update this system");
     return this.prisma.systems.update({ data, where: systemWhereUniqueInput });
   }
 
-  requestToBeAdmin(data: Prisma.notificationsCreateManyInput) {
+  async requestToBeAdmin(data: Prisma.notificationsCreateManyInput) {
+    const notifications = await this.prisma.notifications.findMany({
+      where: data,
+    });
+    if (notifications.length > 5) {
+      throw new ForbiddenException(
+        'You request more than 5, please wait admin for confirmation',
+      );
+    }
     return this.prisma.notifications.create({
       data,
     });
   }
 
-  async addAdmin(data: Prisma.usersystemlinksCreateInput) {
+  async addAdmin(data: Prisma.usersystemlinksCreateManyInput) {
+    const userSystemLinks = await this.prisma.usersystemlinks.findFirst({
+      where: data,
+    });
+    if (userSystemLinks)
+      throw new ForbiddenException("You're already admin in this system");
     return this.prisma.usersystemlinks.create({
       data,
     });
