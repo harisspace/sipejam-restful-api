@@ -9,14 +9,20 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Req,
+  Patch,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { CreateUserDto, SignInUserDto } from './user.dto';
+import { CreateUserDto, SignInUserDto, UpdateUserDto } from './user.dto';
 import { UserService } from './services/user.service';
 import { AuthGuard } from './guards/auth.guard';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
+import { OwnUserRestrictGuard } from './guards/own-user-restrict.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UnlinkStaticFilesInterceptor } from 'src/system/interceptors/unlink-static-files.interceptor';
 
 @Controller('user')
 export class UserController {
@@ -58,8 +64,21 @@ export class UserController {
     return this.userService.resendEmail(token);
   }
 
-  // @Get('/notification')
-  // async getUserNotification() {}
+  @Get('notification/:user_uid')
+  @UseGuards(AuthGuard, OwnUserRestrictGuard)
+  async getUserNotification(@Param('user_uid') user_uid: string) {
+    return this.userService.getUserNotification({
+      where: { to_uid: user_uid },
+      take: 20,
+      orderBy: { created_at: 'desc' },
+    });
+  }
+
+  @Get('checkauth')
+  @UseGuards(AuthGuard)
+  isUserLogin(@Req() req: any) {
+    return req.user;
+  }
 
   @Post('signup')
   async createUser(@Body() createUserDto: CreateUserDto) {
@@ -85,14 +104,19 @@ export class UserController {
 
   @Delete('delete/:user_uid')
   @Roles('superadmin')
-  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   async deleteUser(@Param('user_uid', ParseUUIDPipe) user_uid: string) {
     return this.userService.deleteUser(user_uid);
   }
 
-  @Get('checkauth')
-  @UseGuards(AuthGuard)
-  isUserLogin(@Req() req: any) {
-    return req.user;
+  @Patch('update/:user_uid')
+  @UseGuards(AuthGuard, OwnUserRestrictGuard)
+  @UseInterceptors(FileInterceptor('image'), UnlinkStaticFilesInterceptor)
+  async updateUser(
+    @Param('user_uid', ParseUUIDPipe) user_uid: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() fileImage: Express.Multer.File,
+  ) {
+    return this.userService.updateUser(updateUserDto, { user_uid }, fileImage);
   }
 }

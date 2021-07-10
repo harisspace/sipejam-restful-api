@@ -21,23 +21,11 @@ export class RolesGuard implements CanActivate {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
     const request = context.switchToHttp().getRequest();
 
-    const { token, oauth_token } = request.cookies;
+    const { user_role } = request.user;
 
-    if (!token && !oauth_token) return false;
-
-    // decoded Cookie value
-    const { decodedFailed, decodedToken } = this.jwtService.decodeToken(
-      token || oauth_token,
-    );
-    if (decodedFailed) return false;
-    if (
-      decodedToken.user_role !== roles[0] &&
-      decodedToken.user_role !== roles[1]
-    ) {
+    if (user_role !== roles[0] && user_role !== roles[1]) {
       return false;
     }
-
-    request.user = decodedToken;
     return true;
   }
 }

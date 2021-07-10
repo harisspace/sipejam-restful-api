@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -45,6 +46,15 @@ export class UserService {
       cursor,
       select: SelectUser,
     });
+  }
+
+  async getUserNotification(params: {
+    where: Prisma.notificationsWhereInput;
+    take?: number;
+    orderBy?: Prisma.notificationsOrderByInput;
+  }) {
+    const { where, orderBy, take } = params;
+    return this.prisma.notifications.findMany({ where, take, orderBy });
   }
 
   async createUser(data: Prisma.usersCreateInput): Promise<Partial<users>> {
@@ -162,5 +172,30 @@ export class UserService {
     } catch (err) {
       throw new NotFoundException('User Not Found');
     }
+  }
+
+  async updateUser(
+    data: Prisma.usersUpdateInput,
+    userWhereUniqueInput: Prisma.usersWhereUniqueInput,
+    imageFile: Express.Multer.File,
+  ): Promise<users> {
+    let user: users;
+    try {
+      user = imageFile
+        ? await this.prisma.users.update({
+            where: userWhereUniqueInput,
+            data: { ...data, image_uri: imageFile.filename },
+          })
+        : await this.prisma.users.update({
+            where: userWhereUniqueInput,
+            data,
+          });
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError)
+        throw new ConflictException('Username or email already exist');
+      throw new InternalServerErrorException();
+    }
+    return user;
   }
 }

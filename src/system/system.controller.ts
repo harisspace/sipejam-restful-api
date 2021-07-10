@@ -16,9 +16,9 @@ import { SelectUser } from 'src/interface/user.interface';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { AuthGuard } from 'src/user/guards/auth.guard';
 import { RolesGuard } from 'src/user/guards/roles.guard';
-import { AdminSystemRestrictGuard } from './guard/admin-system-restrict.guard';
-import { SystemMakerRestrictGuard } from './guard/system-maker-restrict.guard';
-import { UnlinkStaticFilesInterceptor } from './interceptor/unlink-static-files.interceptor';
+import { AdminSystemRestrictGuard } from './guards/admin-system-restrict.guard';
+import { SystemMakerRestrictGuard } from './guards/system-maker-restrict.guard';
+import { UnlinkStaticFilesInterceptor } from './interceptors/unlink-static-files.interceptor';
 import { SystemService } from './services/system.service';
 import {
   AddAdminDto,
@@ -47,6 +47,7 @@ export class SystemController {
   }
 
   @Get('admin/:userUid')
+  @UseGuards(AuthGuard)
   getSystemsByUserAmin(@Param('userUid') user_uid: string) {
     return this.systemService.getSystemsByUserAdmin(
       {
@@ -58,13 +59,14 @@ export class SystemController {
   }
 
   @Get('notadmin/:userUid')
+  @UseGuards(AuthGuard)
   getSystemsByUserNotAdmin(@Param('userUid') user_uid: string) {
     return this.systemService.getSystemByUserNotAdmin(user_uid);
   }
 
   @Post('create')
   @Roles('superadmin')
-  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @UseInterceptors(FileInterceptor('image'))
   createSystem(
     @Body() createSystemDto: CreateSystemDto,
@@ -75,7 +77,7 @@ export class SystemController {
 
   @Delete('delete/:system_uid')
   @Roles('superadmin')
-  @UseGuards(RolesGuard, SystemMakerRestrictGuard)
+  @UseGuards(AuthGuard, RolesGuard, SystemMakerRestrictGuard)
   deleteSystem(@Req() req: any, @Param('system_uid') system_uid: string) {
     return this.systemService.deleteSystem({ system_uid });
   }
@@ -88,14 +90,14 @@ export class SystemController {
 
   @Post('add')
   @Roles('superadmin')
-  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   addAdmin(@Body() addAdminDto: AddAdminDto) {
     return this.systemService.addAdmin(addAdminDto);
   }
 
   @Patch('update/:system_uid')
   @Roles('superadmin', 'admin')
-  @UseGuards(AuthGuard, AdminSystemRestrictGuard)
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
   @UseInterceptors(FileInterceptor('image'), UnlinkStaticFilesInterceptor)
   updateSystem(
     @Param('system_uid') system_uid: string,

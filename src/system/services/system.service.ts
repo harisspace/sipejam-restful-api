@@ -151,6 +151,11 @@ export class SystemService {
     });
     if (userSystemLinks)
       throw new ForbiddenException("You're already admin in this system");
+    // change user role from user to admin
+    await this.prisma.users.update({
+      where: { user_uid: data.user_uid },
+      data: { user_role: 'admin' },
+    });
     return this.prisma.usersystemlinks.create({
       data,
     });
