@@ -7,27 +7,30 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import WebSocket, { Server } from 'ws';
+import * as WebSocket from 'ws';
 
 @WebSocketGateway()
 export class EventsGateway {
   @WebSocketServer()
-  server: Server;
+  server: WebSocket.Server;
 
   @SubscribeMessage('speed')
   onEventSpeed(@MessageBody() data: any, @ConnectedSocket() socket: any) {
     console.log(data);
-    return { data, event: 'speed' };
+    this.server.clients.forEach((client: any) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ data, event: 'speed' }));
+      }
+    });
   }
 
   @SubscribeMessage('vehicle')
   onEventVehicle(@MessageBody() data: any, @ConnectedSocket() socket: any) {
     console.log(data);
     this.server.clients.forEach((client: any) => {
-      client.send(JSON.stringify({ data, event: 'vehicle' }));
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ data, event: 'vehicle' }));
+      }
     });
-    // socket.emit('vehicle', () => console.log('hello'));
-    // return { data, event: 'vehicle' };
-    // return false;
   }
 }

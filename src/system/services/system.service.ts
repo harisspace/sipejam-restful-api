@@ -6,8 +6,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, systems } from '@prisma/client';
-import { SelectUser } from 'src/interface/user.interface';
+import { notifications, Prisma, systems } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
@@ -37,6 +36,7 @@ export class SystemService {
   ) {
     const system = await this.prisma.systems.findUnique({
       where: systemWhereUniqueInput,
+      include: { users: true },
     });
     if (!system) throw new NotFoundException('System not found');
     return system;
@@ -56,22 +56,24 @@ export class SystemService {
   }
 
   async getSystemByUserNotAdmin(user_uid: string) {
-    const systems = await this.prisma.systems.findMany({ take: 20 });
+    const systems = await this.prisma.systems.findMany({
+      take: 20,
+      include: { users: true },
+      orderBy: { created_at: 'desc' },
+      where: { usersystemlinks: { every: { NOT: { user_uid } } } },
+    });
     if (systems.length < 1) throw new NotFoundException('Systems not found');
 
-    const systemsByUserAdmin = await this.prisma.usersystemlinks.findMany({
-      where: { user_uid },
-      include: { systems: true },
-    });
+    return systems;
+  }
 
-    const systemsByUserNotAdmin = systems.filter((system: systems) => {
-      systemsByUserAdmin.forEach(
-        (systemByUserAdmin) =>
-          system.system_uid !== systemByUserAdmin.system_uid,
-      );
-    });
-
-    return systemsByUserNotAdmin;
+  async getSystemByUserCreatedSystem(params: {
+    where: Prisma.systemsWhereInput;
+    include: Prisma.systemsInclude;
+    orderBy: Prisma.systemsOrderByInput;
+  }) {
+    const { where, include, orderBy } = params;
+    return this.prisma.systems.findMany({ where, include, orderBy });
   }
 
   async createSystem(
@@ -135,9 +137,9 @@ export class SystemService {
     const notifications = await this.prisma.notifications.findMany({
       where: data,
     });
-    if (notifications.length > 5) {
+    if (notifications.length >= 1) {
       throw new ForbiddenException(
-        'You request more than 5, please wait admin for confirmation',
+        'You request more than 1, please wait admin for confirmation',
       );
     }
     return this.prisma.notifications.create({

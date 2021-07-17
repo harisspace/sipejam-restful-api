@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -15,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { SelectUser } from 'src/interface/user.interface';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { AuthGuard } from 'src/user/guards/auth.guard';
+import { OwnUserRestrictGuard } from 'src/user/guards/own-user-restrict.guard';
 import { RolesGuard } from 'src/user/guards/roles.guard';
 import { AdminSystemRestrictGuard } from './guards/admin-system-restrict.guard';
 import { SystemMakerRestrictGuard } from './guards/system-maker-restrict.guard';
@@ -40,15 +40,15 @@ export class SystemController {
     });
   }
 
-  @Get(':systemUid')
+  @Get(':system_uid')
   @UseGuards(AuthGuard)
-  getSpecificSystem(@Param('systemUid') system_uid: string) {
+  getSpecificSystem(@Param('system_uid') system_uid: string) {
     return this.systemService.getSpecificSystem({ system_uid });
   }
 
-  @Get('admin/:userUid')
+  @Get('admin/:user_uid')
   @UseGuards(AuthGuard)
-  getSystemsByUserAmin(@Param('userUid') user_uid: string) {
+  getSystemsByUserAmin(@Param('user_uid') user_uid: string) {
     return this.systemService.getSystemsByUserAdmin(
       {
         orderBy: { created_at: 'desc' },
@@ -58,10 +58,26 @@ export class SystemController {
     );
   }
 
-  @Get('notadmin/:userUid')
+  @Get('notadmin/:user_uid')
   @UseGuards(AuthGuard)
-  getSystemsByUserNotAdmin(@Param('userUid') user_uid: string) {
+  getSystemsByUserNotAdmin(@Param('user_uid') user_uid: string) {
     return this.systemService.getSystemByUserNotAdmin(user_uid);
+  }
+
+  @Get('checkadmin/:system_uid')
+  @UseGuards(AuthGuard, AdminSystemRestrictGuard)
+  checkAdminSystem() {
+    return { is_admin: true };
+  }
+
+  @Get('usercreated/:user_uid')
+  @UseGuards(AuthGuard)
+  getSystemsByUserCreatedSystem(@Param('user_uid') user_uid: string) {
+    return this.systemService.getSystemByUserCreatedSystem({
+      where: { system_maker: user_uid },
+      include: { users: true },
+      orderBy: { created_at: 'desc' },
+    });
   }
 
   @Post('create')
@@ -75,13 +91,6 @@ export class SystemController {
     return this.systemService.createSystem(createSystemDto, image);
   }
 
-  @Delete('delete/:system_uid')
-  @Roles('superadmin')
-  @UseGuards(AuthGuard, RolesGuard, SystemMakerRestrictGuard)
-  deleteSystem(@Req() req: any, @Param('system_uid') system_uid: string) {
-    return this.systemService.deleteSystem({ system_uid });
-  }
-
   @Post('join')
   @UseGuards(AuthGuard)
   requestToBeAdmin(@Body() requestToBeAdminDto: RequestToBeAdminDto) {
@@ -93,6 +102,13 @@ export class SystemController {
   @UseGuards(AuthGuard, RolesGuard)
   addAdmin(@Body() addAdminDto: AddAdminDto) {
     return this.systemService.addAdmin(addAdminDto);
+  }
+
+  @Delete('delete/:system_uid')
+  @Roles('superadmin')
+  @UseGuards(AuthGuard, RolesGuard, SystemMakerRestrictGuard)
+  deleteSystem(@Param('system_uid') system_uid: string) {
+    return this.systemService.deleteSystem({ system_uid });
   }
 
   @Patch('update/:system_uid')

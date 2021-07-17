@@ -12,6 +12,8 @@ import {
   Patch,
   UseInterceptors,
   UploadedFile,
+  Query,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
@@ -33,7 +35,7 @@ export class UserController {
 
   @Get()
   @UseGuards(AuthGuard)
-  getUsers() {
+  async getUsers() {
     return this.userService.getUsers({
       orderBy: { created_at: 'desc' },
       take: 20,
@@ -42,7 +44,8 @@ export class UserController {
   }
 
   @Get('profile/:user_uid')
-  async getSpecificUser(@Param() user_uid: string) {
+  @UseGuards(AuthGuard)
+  async getSpecificUser(@Param('user_uid') user_uid: string) {
     return this.userService.getUser({ user_uid });
   }
 
@@ -68,9 +71,10 @@ export class UserController {
   @UseGuards(AuthGuard, OwnUserRestrictGuard)
   async getUserNotification(@Param('user_uid') user_uid: string) {
     return this.userService.getUserNotification({
-      where: { to_uid: user_uid },
+      where: { to_uid: user_uid, read: false },
       take: 20,
       orderBy: { created_at: 'desc' },
+      include: { users_notifications_from_uidTousers: true },
     });
   }
 
@@ -95,7 +99,10 @@ export class UserController {
     res.cookie('token', token, {
       path: '/',
       maxAge: 6048000000,
-      sameSite: 'none',
+      sameSite:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'none'
+          : 'strict',
       httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
     });
@@ -118,5 +125,14 @@ export class UserController {
     @UploadedFile() fileImage: Express.Multer.File,
   ) {
     return this.userService.updateUser(updateUserDto, { user_uid }, fileImage);
+  }
+
+  @Patch('notification/:notification_uid')
+  @UseGuards(AuthGuard)
+  async readNotificationTrue(
+    @Query('read', ParseBoolPipe) read: boolean,
+    @Param('notification_uid') notification_uid: string,
+  ) {
+    return this.userService.readNotificationTrue(notification_uid, read);
   }
 }

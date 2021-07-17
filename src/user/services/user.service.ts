@@ -6,7 +6,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Prisma, users } from '@prisma/client';
+import { notifications, Prisma, users } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { SelectUser } from '../../interface/user.interface';
 import * as bcrypt from 'bcrypt';
@@ -52,9 +52,15 @@ export class UserService {
     where: Prisma.notificationsWhereInput;
     take?: number;
     orderBy?: Prisma.notificationsOrderByInput;
+    include?: Prisma.notificationsInclude;
   }) {
-    const { where, orderBy, take } = params;
-    return this.prisma.notifications.findMany({ where, take, orderBy });
+    const { where, orderBy, take, include } = params;
+    return this.prisma.notifications.findMany({
+      where,
+      take,
+      orderBy,
+      include,
+    });
   }
 
   async createUser(data: Prisma.usersCreateInput): Promise<Partial<users>> {
@@ -197,5 +203,21 @@ export class UserService {
       throw new InternalServerErrorException();
     }
     return user;
+  }
+
+  async readNotificationTrue(notification_uid: string, read: boolean) {
+    let notification: notifications;
+    try {
+      notification = await this.prisma.notifications.update({
+        data: { read },
+        where: { notification_uid },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new NotFoundException('Notification not found');
+      }
+      throw new InternalServerErrorException();
+    }
+    return notification;
   }
 }
