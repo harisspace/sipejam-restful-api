@@ -85,7 +85,7 @@ export class UserController {
   }
 
   @Post('signup')
-  async createUser(@Body() createUserDto: CreateUserDto) {
+  createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }
 
@@ -112,14 +112,14 @@ export class UserController {
   @Delete('delete/:user_uid')
   @Roles('superadmin')
   @UseGuards(AuthGuard, RolesGuard)
-  async deleteUser(@Param('user_uid', ParseUUIDPipe) user_uid: string) {
+  deleteUser(@Param('user_uid', ParseUUIDPipe) user_uid: string) {
     return this.userService.deleteUser(user_uid);
   }
 
   @Patch('update/:user_uid')
   @UseGuards(AuthGuard, OwnUserRestrictGuard)
   @UseInterceptors(FileInterceptor('image'), UnlinkStaticFilesInterceptor)
-  async updateUser(
+  updateUser(
     @Param('user_uid', ParseUUIDPipe) user_uid: string,
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() fileImage: Express.Multer.File,
@@ -129,7 +129,7 @@ export class UserController {
 
   @Patch('notification/:notification_uid')
   @UseGuards(AuthGuard)
-  async readNotificationTrue(
+  readNotificationTrue(
     @Query('read', ParseBoolPipe) read: boolean,
     @Param('notification_uid') notification_uid: string,
   ) {

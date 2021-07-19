@@ -16,6 +16,10 @@ export class WsAdapter implements WebSocketAdapter {
     server.on('connection', callback);
   }
 
+  bindClientDisconnect(server, callback: Function) {
+    server.on('disconnect', callback);
+  }
+
   bindMessageHandlers(
     client: WebSocket,
     handlers: MessageMappingProperties[],

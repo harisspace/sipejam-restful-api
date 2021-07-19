@@ -26,10 +26,16 @@ import {
   RequestToBeAdminDto,
   UpdateSystemDto,
 } from './system.dto';
+import { promisify } from 'util';
+import { createHmac } from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('system')
 export class SystemController {
-  constructor(private systemService: SystemService) {}
+  constructor(
+    private systemService: SystemService,
+    private configService: ConfigService,
+  ) {}
 
   @Get()
   @UseGuards(AuthGuard)
@@ -80,15 +86,69 @@ export class SystemController {
     });
   }
 
+  @Get('speed1/:system_uid')
+  @Roles('admin', 'superadmin')
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
+  getAllSpeed1Data(@Param('system_uid') system_uid: string) {
+    return this.systemService.getAllSpeed1Data({
+      where: { system_uid },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
+  }
+
+  @Get('speed2/:system_uid')
+  @Roles('admin', 'superadmin')
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
+  getAllSpeed2Data(@Param('system_uid') system_uid: string) {
+    return this.systemService.getAllSpeed2Data({
+      where: { system_uid },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
+  }
+
+  @Get('vehicle1/:system_uid')
+  @Roles('admin', 'superadmin')
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
+  getAllVehicle1Data(@Param('system_uid') system_uid: string) {
+    return this.systemService.getAllVehicle1Data({
+      where: { system_uid },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
+  }
+
+  @Get('vehicle2/:system_uid')
+  @Roles('admin', 'superadmin')
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
+  getAllVehicle2Data(@Param('system_uid') system_uid: string) {
+    return this.systemService.getAllVehicle2Data({
+      where: { system_uid },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
+  }
+
   @Post('create')
   @Roles('superadmin')
   @UseGuards(AuthGuard, RolesGuard)
   @UseInterceptors(FileInterceptor('image'))
-  createSystem(
+  async createSystem(
     @Body() createSystemDto: CreateSystemDto,
     @UploadedFile() image: Express.Multer.File,
   ) {
-    return this.systemService.createSystem(createSystemDto, image);
+    const iot_token = createHmac(
+      'sha256',
+      this.configService.get<string>('ENCRYPT_KEY'),
+    )
+      .update(createSystemDto.name)
+      .digest('hex');
+
+    return this.systemService.createSystem(
+      { ...createSystemDto, iot_token },
+      image,
+    );
   }
 
   @Post('join')

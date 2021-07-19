@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialActions"]
 }
 
@@ -26,6 +26,7 @@ model notifications {
 model systems {
   id              Int               @id @default(autoincrement())
   system_uid      String            @unique @default(uuid()) @db.Uuid
+  iot_token       String            @unique @db.VarChar(300)
   name            String            @unique @db.VarChar(250)
   placed          String            @db.VarChar(300)
   system_maker    String            @db.Uuid
@@ -35,6 +36,10 @@ model systems {
   created_at      DateTime          @default(now()) @db.Timestamptz(6)
   updated_at      DateTime          @default(now()) @db.Timestamptz(6)
   users           users             @relation(fields: [system_maker], references: [user_uid])
+  speeds1         speeds1[]
+  speeds2         speeds2[]
+  vehicles1       vehicles1[]
+  vehicles2       vehicles2[]
   usersystemlinks usersystemlinks[]
 }
 
@@ -65,6 +70,46 @@ model usersystemlinks {
   system_role         role     @default(admin)
   systems             systems  @relation(fields: [system_uid], references: [system_uid], onDelete: Cascade)
   users               users    @relation(fields: [user_uid], references: [user_uid])
+}
+
+model speeds1 {
+  id          Int      @id @default(autoincrement())
+  speeds1_uid String   @default(uuid()) @db.Uuid @unique
+  iot_token   String   @db.VarChar(300)
+  speed       Int
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @db.Timestamptz(6)
+  systems     systems  @relation(fields: [iot_token], references: [iot_token], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model speeds2 {
+  id          Int      @id @default(autoincrement())
+  speeds2_uid String   @unique @db.Uuid @default(uuid())
+  iot_token   String   @db.VarChar(300)
+  speed       Int
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @db.Timestamptz(6)
+  systems     systems  @relation(fields: [iot_token], references: [iot_token], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model vehicles1 {
+  id               Int      @id @default(autoincrement())
+  vehicles1_uid    String   @unique @db.Uuid @default(uuid())
+  iot_token        String   @db.VarChar(300)
+  vehicle          Int
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @default(now()) @db.Timestamptz(6)
+  systems          systems @relation(fields: [iot_token], references: [iot_token],onDelete: NoAction, onUpdate: NoAction)
+}
+
+model vehicles2 {
+  id              Int      @id @default(autoincrement())
+  vehicles2_uid   String   @unique @db.Uuid @default(uuid())
+  iot_token       String   @db.VarChar(300)
+  vehicle         Int
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @db.Timestamptz(6)
+  systems         systems @relation(fields: [iot_token], references: [iot_token], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum role {

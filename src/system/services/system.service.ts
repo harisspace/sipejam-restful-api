@@ -87,7 +87,7 @@ export class SystemService {
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new BadRequestException('System name is taken');
+        throw new BadRequestException('System name is taken', err.message);
       }
       return err;
     }
@@ -160,6 +160,94 @@ export class SystemService {
     });
     return this.prisma.usersystemlinks.create({
       data,
+    });
+  }
+
+  async getAllSpeed1Data(params: {
+    where?: Prisma.systemsWhereUniqueInput;
+    cursor?: Prisma.speeds1WhereUniqueInput;
+    skip?: number;
+    orderBy?: Prisma.speeds1OrderByInput;
+    take?: number;
+  }) {
+    const { cursor, where, orderBy, skip, take } = params;
+    const { iot_token } = await this.prisma.systems.findUnique({
+      where,
+      select: { iot_token: true },
+    });
+    if (!iot_token) throw new NotFoundException('System not found');
+    return this.prisma.speeds1.findMany({
+      where: { iot_token },
+      orderBy,
+      cursor,
+      take,
+      skip,
+    });
+  }
+
+  async getAllSpeed2Data(params: {
+    where?: Prisma.systemsWhereUniqueInput;
+    cursor?: Prisma.speeds1WhereUniqueInput;
+    skip?: number;
+    orderBy?: Prisma.speeds1OrderByInput;
+    take?: number;
+  }) {
+    const { cursor, where, orderBy, skip, take } = params;
+    const { iot_token } = await this.prisma.systems.findUnique({
+      where,
+      select: { iot_token: true },
+    });
+    if (!iot_token) throw new NotFoundException('System not found');
+    return this.prisma.speeds2.findMany({
+      where: { iot_token },
+      orderBy,
+      cursor,
+      take,
+      skip,
+    });
+  }
+
+  async getAllVehicle1Data(params: {
+    where?: Prisma.systemsWhereUniqueInput;
+    cursor?: Prisma.speeds1WhereUniqueInput;
+    skip?: number;
+    orderBy?: Prisma.speeds1OrderByInput;
+    take?: number;
+  }) {
+    const { cursor, where, orderBy, skip, take } = params;
+    const { iot_token } = await this.prisma.systems.findUnique({
+      where,
+      select: { iot_token: true },
+    });
+    if (!iot_token) throw new NotFoundException('System not found');
+    return this.prisma.vehicles1.findMany({
+      where: { iot_token },
+      orderBy,
+      cursor,
+      take,
+      skip,
+    });
+  }
+
+  async getAllVehicle2Data(params: {
+    where?: Prisma.systemsWhereUniqueInput;
+    cursor?: Prisma.speeds1WhereUniqueInput;
+    skip?: number;
+    orderBy?: Prisma.speeds1OrderByInput;
+    take?: number;
+  }) {
+    const { cursor, where, orderBy, skip, take } = params;
+    const { iot_token } = await this.prisma.systems.findUnique({
+      where,
+      select: { iot_token: true },
+    });
+    if (!iot_token) throw new NotFoundException('System not found');
+    return this.prisma.vehicles2.findMany({
+      where: { iot_token },
+      orderBy,
+      cursor,
+      take,
+      skip,
     });
   }
 }
