@@ -50,7 +50,7 @@ model users {
   email                                       String            @unique @db.VarChar(300)
   password                                    String            @db.VarChar(300)
   user_role                                   role              @default(user)
-  image_uri                                   String?           @db.VarChar(300)
+  image_uri                                   String?           @db.VarChar(300) @default("user.jpg")
   confirmed                                   Boolean           @default(false)
   created_at                                  DateTime          @default(now()) @db.Timestamptz(6)
   updated_at                                  DateTime          @default(now()) @db.Timestamptz(6)

@@ -14,7 +14,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { SelectUser } from 'src/interface/user.interface';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { AuthGuard } from 'src/user/guards/auth.guard';
-import { OwnUserRestrictGuard } from 'src/user/guards/own-user-restrict.guard';
 import { RolesGuard } from 'src/user/guards/roles.guard';
 import { AdminSystemRestrictGuard } from './guards/admin-system-restrict.guard';
 import { SystemMakerRestrictGuard } from './guards/system-maker-restrict.guard';
@@ -26,7 +25,6 @@ import {
   RequestToBeAdminDto,
   UpdateSystemDto,
 } from './system.dto';
-import { promisify } from 'util';
 import { createHmac } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 
@@ -167,6 +165,7 @@ export class SystemController {
   @Delete('delete/:system_uid')
   @Roles('superadmin')
   @UseGuards(AuthGuard, RolesGuard, SystemMakerRestrictGuard)
+  @UseInterceptors(UnlinkStaticFilesInterceptor)
   deleteSystem(@Param('system_uid') system_uid: string) {
     return this.systemService.deleteSystem({ system_uid });
   }

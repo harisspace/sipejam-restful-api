@@ -23,9 +23,22 @@ export class UnlinkStaticFilesInterceptor implements NestInterceptor {
     const request: Request = context.switchToHttp().getRequest();
     const fileImage = request.file;
     const { system_uid, user_uid } = request.params;
-    console.log(system_uid, user_uid);
+    console.log(system_uid, user_uid, request.method);
     if (system_uid) {
       if (fileImage) {
+        const system = await this.prisma.systems.findUnique({
+          where: { system_uid },
+        });
+        fs.unlink(
+          join(process.cwd(), 'client', 'images', system.image_uri),
+          (err) => {
+            if (err) throw new InternalServerErrorException();
+            console.log('image deleted');
+          },
+        );
+      }
+
+      if (request.method === 'DELETE') {
         const system = await this.prisma.systems.findUnique({
           where: { system_uid },
         });
@@ -41,6 +54,19 @@ export class UnlinkStaticFilesInterceptor implements NestInterceptor {
 
     if (user_uid) {
       if (fileImage) {
+        const user = await this.prisma.users.findUnique({
+          where: { user_uid },
+        });
+        fs.unlink(
+          join(process.cwd(), 'client', 'images', user.image_uri),
+          (err) => {
+            if (err) throw new InternalServerErrorException();
+            console.log('image deleted');
+          },
+        );
+      }
+
+      if (request.method == 'delete') {
         const user = await this.prisma.users.findUnique({
           where: { user_uid },
         });
