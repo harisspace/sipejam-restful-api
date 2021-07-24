@@ -11,6 +11,7 @@ async function bootstrap() {
   app.enableCors({
     origin: configService.get<string>('CLIENT_DOMAIN'),
     credentials: true,
+    preflightContinue: true,
   });
   app.useWebSocketAdapter(new WsAdapter(app));
   app.use(cookieParser());
