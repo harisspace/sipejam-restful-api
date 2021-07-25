@@ -11,6 +11,7 @@ async function bootstrap() {
   app.enableCors({
     origin: true,
     credentials: true,
+    exposedHeaders: ['set-cookie'],
   });
   app.useWebSocketAdapter(new WsAdapter(app));
   app.use(cookieParser());
