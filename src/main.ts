@@ -9,11 +9,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   app.enableCors({
-    origin: [configService.get<string>('CLIENT_DOMAIN')],
+    origin: true,
     credentials: true,
     exposedHeaders: ['Set-Cookie'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   });
   app.useWebSocketAdapter(new WsAdapter(app));
   app.use(cookieParser());
