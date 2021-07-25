@@ -104,7 +104,7 @@ export class UserController {
           ? 'none'
           : 'strict',
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: false, // this.configService.get<string>('NODE_ENV') === 'production',
     });
     return user;
   }
