@@ -81,6 +81,7 @@ export class UserController {
   @Get('checkauth')
   @UseGuards(AuthGuard)
   isUserLogin(@Req() req: any) {
+    console.log(req.user);
     return req.user;
   }
 
@@ -95,6 +96,7 @@ export class UserController {
     @Body() signInUserDto: SignInUserDto,
   ) {
     const { user, token } = await this.userService.signInUser(signInUserDto);
+    console.log(token);
     // set cookie
     res.cookie('token', token, {
       path: '/',
