@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -222,39 +223,66 @@ export class UserService {
   }
 
   async googleOAuthService(code: string) {
-    const data = await this.httpService.post(
-      `https://oauth2.googleapis.com/token`,
-      {
+    console.log(code);
+    const {
+      data: { access_token },
+    } = await this.httpService
+      .post(`https://oauth2.googleapis.com/token`, {
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
         redirect_uri: process.env.OAUTH_REDIRECT,
         grant_type: 'authorization_code',
         code,
-      },
-    );
+      })
+      .toPromise();
+    console.log('access token', access_token);
 
-    data.subscribe({
-      error: (err: any) => {
-        throw new BadRequestException();
-      },
-      next: ({ access_token }: any) => {
-        console.log(access_token);
-        this.httpService
-          .get('https://www.googleapis.com/oauth2/v2/userinfo', {
-            headers: { Authorization: `Bearer ${access_token}` },
-          })
-          .subscribe({
-            error: () => {
-              throw new InternalServerErrorException();
-            },
-            next: (data: any) => {
-              console.log(data);
-            },
-          })
-          .unsubscribe();
-      },
+    if (!access_token) throw new ForbiddenException();
+
+    const { data: user } = await this.httpService
+      .get('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${access_token}` },
+      })
+      .toPromise();
+
+    console.log(user);
+
+    if (!user) throw new ForbiddenException();
+
+    const userDB = await this.prisma.users.findUnique({
+      where: { email: user.email },
+      rejectOnNotFound: false,
     });
 
-    return 'oke';
+    if (userDB)
+      throw new BadRequestException(
+        'You already registered, signin for better experience',
+      );
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('google', salt);
+
+    // save to db
+    const createdUser = await this.prisma.users.create({
+      data: {
+        email: user.email,
+        password: hashedPassword,
+        username: user.name,
+        image_uri: user.picture,
+      },
+      select: SelectUser,
+    });
+
+    // generate token
+    const { username, user_role, user_uid, email, image_uri } = createdUser;
+    const token = this.jwtService.signToken({
+      username,
+      user_role,
+      user_uid,
+      email,
+      image_uri,
+    });
+
+    return { token, user: createdUser }; // e.g {id,email, name, given_name, family_name, picture, locale}
   }
 }

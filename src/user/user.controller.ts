@@ -51,8 +51,24 @@ export class UserController {
 
   @Get('oauth/google/confirmation')
   @UseInterceptors()
-  async googleOAuth(@Query('code') code: string) {
-    return this.userService.googleOAuthService(code);
+  async googleOAuth(
+    @Query('code') code: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { user, token } = await this.userService.googleOAuthService(code);
+
+    res.cookie('token', token, {
+      path: '/',
+      maxAge: 6048000000,
+      sameSite:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'none'
+          : 'strict',
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+    });
+
+    return user;
   }
 
   @Get('signout')
@@ -101,7 +117,6 @@ export class UserController {
     @Body() signInUserDto: SignInUserDto,
   ) {
     const { user, token } = await this.userService.signInUser(signInUserDto);
-    console.log(token);
     // set cookie
     res.cookie('token', token, {
       path: '/',
@@ -110,7 +125,7 @@ export class UserController {
         this.configService.get<string>('NODE_ENV') === 'production'
           ? 'none'
           : 'strict',
-      httpOnly: false,
+      httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
     });
     return user;
