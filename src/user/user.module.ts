@@ -5,11 +5,12 @@ import { UserController } from './user.controller';
 import { UserService } from './services/user.service';
 import { JwtService } from './services/jwt.service';
 import { EmailService } from './services/email.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   controllers: [UserController],
   providers: [UserService, PrismaService, JwtService, EmailService],
-  imports: [ConfigModule],
+  imports: [ConfigModule, HttpModule],
   exports: [JwtService],
 })
 export class UserModule {}

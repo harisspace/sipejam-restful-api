@@ -10,17 +10,17 @@ import { notifications, Prisma, users } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { SelectUser } from '../../interface/user.interface';
 import * as bcrypt from 'bcrypt';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from './jwt.service';
 import { EmailService } from './email.service';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private configService: ConfigService,
     private jwtService: JwtService,
     private emailService: EmailService,
+    private httpService: HttpService,
   ) {}
 
   async getUser(userWhereUniqueInput: Prisma.usersWhereUniqueInput) {
@@ -219,5 +219,42 @@ export class UserService {
       throw new InternalServerErrorException();
     }
     return notification;
+  }
+
+  async googleOAuthService(code: string) {
+    const data = await this.httpService.post(
+      `https://oauth2.googleapis.com/token`,
+      {
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET,
+        redirect_uri: process.env.OAUTH_REDIRECT,
+        grant_type: 'authorization_code',
+        code,
+      },
+    );
+
+    data.subscribe({
+      error: (err: any) => {
+        throw new BadRequestException();
+      },
+      next: ({ access_token }: any) => {
+        console.log(access_token);
+        this.httpService
+          .get('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${access_token}` },
+          })
+          .subscribe({
+            error: () => {
+              throw new InternalServerErrorException();
+            },
+            next: (data: any) => {
+              console.log(data);
+            },
+          })
+          .unsubscribe();
+      },
+    });
+
+    return 'oke';
   }
 }

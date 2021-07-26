@@ -62,7 +62,6 @@ export class SystemService {
       orderBy: { created_at: 'desc' },
       where: { usersystemlinks: { every: { NOT: { user_uid } } } },
     });
-    if (systems.length < 1) throw new NotFoundException('Systems not found');
 
     return systems;
   }

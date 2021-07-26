@@ -49,6 +49,12 @@ export class UserController {
     return this.userService.getUser({ user_uid });
   }
 
+  @Get('oauth/google/confirmation')
+  @UseInterceptors()
+  async googleOAuth(@Query('code') code: string) {
+    return this.userService.googleOAuthService(code);
+  }
+
   @Get('signout')
   @UseGuards(AuthGuard)
   signOutUser(@Res({ passthrough: true }) res: Response) {
@@ -81,7 +87,6 @@ export class UserController {
   @Get('checkauth')
   @UseGuards(AuthGuard)
   isUserLogin(@Req() req: any) {
-    console.log(req.user);
     return req.user;
   }
 
@@ -105,7 +110,7 @@ export class UserController {
         this.configService.get<string>('NODE_ENV') === 'production'
           ? 'none'
           : 'strict',
-      httpOnly: true,
+      httpOnly: false,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
     });
     return user;
