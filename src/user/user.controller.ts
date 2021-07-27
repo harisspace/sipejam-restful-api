@@ -16,7 +16,7 @@ import {
   ParseBoolPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { CreateUserDto, SignInUserDto, UpdateUserDto } from './user.dto';
 import { UserService } from './services/user.service';
 import { AuthGuard } from './guards/auth.guard';
@@ -71,8 +71,9 @@ export class UserController {
     return user;
   }
 
-  @Delete('signout')
-  signOutUser(@Res({ passthrough: true }) res: Response) {
+  @Post('signout')
+  signOutUser(@Res({ passthrough: true }) res: Response, @Req() req: Request) {
+    console.log(req.cookies);
     res.clearCookie('token');
     res.clearCookie('oauth_token');
     return { success: true };
