@@ -72,11 +72,11 @@ export class UserController {
   }
 
   @Post('signout')
-  signOutUser(@Res({ passthrough: true }) res: Response, @Req() req: Request) {
+  signOutUser(@Res() res: Response, @Req() req: Request) {
     console.log(req.cookies);
     res.clearCookie('token');
     res.clearCookie('oauth_token');
-    return { success: true };
+    res.end();
   }
 
   @Get('confirmation/:token')
