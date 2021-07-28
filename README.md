@@ -1,1 +1,1 @@
-<a href="https://sipejamunand.com>sipejamunand.com</a> 
+https://sipejamunand.com 
