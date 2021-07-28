@@ -239,7 +239,7 @@ export class UserService {
 
     if (!access_token) throw new ForbiddenException();
 
-    const { data: user } = await this.httpService
+    const { data: user } = await this.httpService // e.g {id,email, name, given_name, family_name, picture, locale}
       .get('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${access_token}` },
       })
@@ -249,40 +249,16 @@ export class UserService {
 
     if (!user) throw new ForbiddenException();
 
-    const userDB = await this.prisma.users.findUnique({
-      where: { email: user.email },
-      rejectOnNotFound: false,
-    });
-
-    if (userDB)
-      throw new BadRequestException(
-        'You already registered, signin for better experience',
-      );
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('google', salt);
-
-    // save to db
-    const createdUser = await this.prisma.users.create({
-      data: {
-        email: user.email,
-        password: hashedPassword,
-        username: user.name,
-        image_uri: user.picture,
-      },
-      select: SelectUser,
-    });
-
     // generate token
-    const { username, user_role, user_uid, email, image_uri } = createdUser;
+    const { id, email, name, picture } = user;
     const token = this.jwtService.signToken({
-      username,
-      user_role,
-      user_uid,
+      username: name,
+      user_role: 'user',
+      user_uid: id,
       email,
-      image_uri,
+      image_uri: picture,
     });
 
-    return { token, user: createdUser }; // e.g {id,email, name, given_name, family_name, picture, locale}
+    return { token, user }; // e.g {id,email, name, given_name, family_name, picture, locale}
   }
 }

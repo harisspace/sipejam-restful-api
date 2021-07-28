@@ -51,24 +51,21 @@ export class UserController {
 
   @Get('oauth/google/confirmation')
   @UseInterceptors()
-  async googleOAuth(
-    @Query('code') code: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async googleOAuth(@Query('code') code: string) {
     const { user, token } = await this.userService.googleOAuthService(code);
 
-    res.cookie('token', token, {
-      path: '/',
-      maxAge: 6048000000,
-      sameSite:
-        this.configService.get<string>('NODE_ENV') === 'production'
-          ? 'none'
-          : 'strict',
-      httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
-    });
+    // res.cookie('token', token, {
+    //   path: '/',
+    //   maxAge: 6048000000,
+    //   sameSite:
+    //     this.configService.get<string>('NODE_ENV') === 'production'
+    //       ? 'none'
+    //       : 'strict',
+    //   httpOnly: true,
+    //   secure: this.configService.get<string>('NODE_ENV') === 'production',
+    // });
 
-    return user;
+    return { user, token };
   }
 
   @Post('signout')
@@ -118,17 +115,17 @@ export class UserController {
   ) {
     const { user, token } = await this.userService.signInUser(signInUserDto);
     // set cookie
-    res.cookie('token', token, {
-      path: '/',
-      maxAge: 6048000000,
-      sameSite:
-        this.configService.get<string>('NODE_ENV') === 'production'
-          ? 'none'
-          : 'strict',
-      httpOnly: false,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
-    });
-    return user;
+    // res.cookie('token', token, {
+    //   path: '/',
+    //   maxAge: 6048000000,
+    //   sameSite:
+    //     this.configService.get<string>('NODE_ENV') === 'production'
+    //       ? 'none'
+    //       : 'strict',
+    //   httpOnly: false,
+    //   secure: this.configService.get<string>('NODE_ENV') === 'production',
+    // });
+    return { user, token };
   }
 
   @Delete('delete/:user_uid')

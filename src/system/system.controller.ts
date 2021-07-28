@@ -52,7 +52,7 @@ export class SystemController {
 
   @Get('admin/:user_uid')
   @UseGuards(AuthGuard)
-  getSystemsByUserAmin(@Param('user_uid') user_uid: string) {
+  async getSystemsByUserAdmin(@Param('user_uid') user_uid: string) {
     return this.systemService.getSystemsByUserAdmin(
       {
         orderBy: { created_at: 'desc' },
