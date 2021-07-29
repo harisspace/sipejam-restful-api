@@ -71,17 +71,16 @@ export class UserController {
   @Post('signout')
   signOutUser(@Res() res: Response, @Req() req: Request) {
     console.log(req.cookies);
-    res.clearCookie('token');
     res.cookie('token', '', {
       path: '/',
-      expires: new Date(),
+      maxAge: 0,
       sameSite:
         this.configService.get<string>('NODE_ENV') === 'production'
           ? 'none'
           : 'strict',
       httpOnly: false,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
-      domain: 'sipejamunand.com',
+      domain: 'sipejam-restfullapi.herokuapp.com',
     });
     res.end();
   }
@@ -134,7 +133,6 @@ export class UserController {
           : 'strict',
       httpOnly: false,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
-      domain: 'sipejamunand.com',
     });
     return user;
   }
