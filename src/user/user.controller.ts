@@ -72,7 +72,17 @@ export class UserController {
   signOutUser(@Res() res: Response, @Req() req: Request) {
     console.log(req.cookies);
     res.clearCookie('token');
-    res.clearCookie('oauth_token');
+    res.cookie('token', '', {
+      path: '/',
+      expires: new Date(),
+      sameSite:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'none'
+          : 'strict',
+      httpOnly: false,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      domain: 'https://sipejam-restfullapi.herokuapp.com/',
+    });
     res.end();
   }
 
@@ -115,17 +125,17 @@ export class UserController {
   ) {
     const { user, token } = await this.userService.signInUser(signInUserDto);
     // set cookie
-    // res.cookie('token', token, {
-    //   path: '/',
-    //   maxAge: 6048000000,
-    //   sameSite:
-    //     this.configService.get<string>('NODE_ENV') === 'production'
-    //       ? 'none'
-    //       : 'strict',
-    //   httpOnly: false,
-    //   secure: this.configService.get<string>('NODE_ENV') === 'production',
-    // });
-    return { user, token };
+    res.cookie('token', token, {
+      path: '/',
+      maxAge: 6048000000,
+      sameSite:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'none'
+          : 'strict',
+      httpOnly: false,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+    });
+    return user;
   }
 
   @Delete('delete/:user_uid')
