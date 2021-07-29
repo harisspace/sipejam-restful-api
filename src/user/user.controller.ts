@@ -81,7 +81,7 @@ export class UserController {
           : 'strict',
       httpOnly: false,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
-      domain: 'https://sipejam-restfullapi.herokuapp.com/',
+      domain: 'sipejamunand.com',
     });
     res.end();
   }
@@ -134,6 +134,7 @@ export class UserController {
           : 'strict',
       httpOnly: false,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
+      domain: 'sipejamunand.com',
     });
     return user;
   }
