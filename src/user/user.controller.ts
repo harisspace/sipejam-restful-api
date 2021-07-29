@@ -69,8 +69,7 @@ export class UserController {
   }
 
   @Post('signout')
-  signOutUser(@Res() res: Response, @Req() req: Request) {
-    console.log(req.cookies);
+  signOutUser(@Res({ passthrough: true }) res: Response) {
     res.cookie('token', '', {
       path: '/',
       maxAge: 0,
@@ -82,7 +81,8 @@ export class UserController {
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       domain: 'sipejam-restfullapi.herokuapp.com',
     });
-    res.end();
+
+    return { success: true };
   }
 
   @Get('confirmation/:token')
