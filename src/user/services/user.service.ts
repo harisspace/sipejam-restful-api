@@ -70,7 +70,7 @@ export class UserService {
       where: { OR: [{ email: data.email }, { username: data.username }] },
     });
 
-    if (user) {
+    if (user && user.oauth === false) {
       throw new BadRequestException('Username or Email is already registered');
     }
 
@@ -78,13 +78,27 @@ export class UserService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(data.password, salt);
 
-    // create user to database
-    const createdUser = await this.prisma.users.create({
-      data: { ...data, password: hashedPassword },
-      select: SelectUser,
-    });
+    // if is oauth true and user exist update password
+    let userDB: Partial<users> | null = null;
+    if (user) {
+      userDB = await this.prisma.users.update({
+        data: {
+          password: hashedPassword,
+          username: data.username,
+          oauth: false,
+        },
+        where: { email: data.email },
+        select: SelectUser,
+      });
+    } else {
+      // create user to database
+      userDB = await this.prisma.users.create({
+        data: { ...data, password: hashedPassword },
+        select: SelectUser,
+      });
+    }
 
-    const { username, user_role, user_uid, email, image_uri } = createdUser;
+    const { username, user_role, user_uid, email, image_uri } = userDB;
     // generate token
     const token = this.jwtService.signToken({
       username,
@@ -98,7 +112,7 @@ export class UserService {
     this.emailService.sendEmail(email, token);
 
     // send response user
-    return { ...createdUser };
+    return { ...userDB };
   }
 
   async signInUser(
@@ -116,7 +130,8 @@ export class UserService {
       } else throw new InternalServerErrorException();
     }
 
-    if (!user) throw new NotFoundException('User Not Found');
+    if (!user || user.oauth === true)
+      throw new NotFoundException('User Not Found');
 
     const { user_role, username, email, user_uid, password, image_uri } = user;
     // check password
@@ -223,7 +238,6 @@ export class UserService {
   }
 
   async googleOAuthService(code: string) {
-    console.log(code);
     const {
       data: { access_token },
     } = await this.httpService
@@ -235,7 +249,6 @@ export class UserService {
         code,
       })
       .toPromise();
-    console.log('access token', access_token);
 
     if (!access_token) throw new ForbiddenException();
 
@@ -245,18 +258,58 @@ export class UserService {
       })
       .toPromise();
 
+    if (!user) throw new ForbiddenException();
     console.log(user);
 
-    if (!user) throw new ForbiddenException();
+    // generate token
+    const { email, name, picture } = user;
+
+    // check is user already signup
+    const isUserInDB = await this.prisma.users.findUnique({
+      where: { email },
+    });
+
+    if (isUserInDB && isUserInDB.oauth === false) {
+      throw new ForbiddenException(
+        "It's seem you already registered, better for signin",
+      );
+    }
+
+    // if user not in DB and create that in db
+    let userDB: Partial<users>;
+    if (!isUserInDB) {
+      // generate password
+      const salt = await bcrypt.genSalt(10);
+      const password = await bcrypt.hash(name, salt);
+
+      // save to db with oauth true
+      userDB = await this.prisma.users.create({
+        data: {
+          username: name,
+          email,
+          oauth: true,
+          password,
+          image_uri: picture,
+        },
+        select: SelectUser,
+      });
+    }
 
     // generate token
-    const { id, email, name, picture } = user;
+    const {
+      username,
+      user_role,
+      user_uid,
+      email: emailUserDB,
+      image_uri,
+    } = userDB;
+
     const token = this.jwtService.signToken({
-      username: name,
-      user_role: 'user',
-      user_uid: id,
-      email,
-      image_uri: picture,
+      username,
+      user_role,
+      user_uid,
+      email: emailUserDB,
+      image_uri,
     });
 
     return { token, user }; // e.g {id,email, name, given_name, family_name, picture, locale}

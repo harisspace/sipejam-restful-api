@@ -1,5 +1,5 @@
 export function makeid(length: number): string {
-  let result = [];
+  const result = [];
   const characters =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;

@@ -16,7 +16,7 @@ import {
   ParseBoolPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { CreateUserDto, SignInUserDto, UpdateUserDto } from './user.dto';
 import { UserService } from './services/user.service';
 import { AuthGuard } from './guards/auth.guard';
@@ -51,19 +51,19 @@ export class UserController {
 
   @Get('oauth/google/confirmation')
   @UseInterceptors()
-  async googleOAuth(@Query('code') code: string) {
+  async googleOAuth(@Query('code') code: string, @Res() res: Response) {
     const { user, token } = await this.userService.googleOAuthService(code);
 
-    // res.cookie('token', token, {
-    //   path: '/',
-    //   maxAge: 6048000000,
-    //   sameSite:
-    //     this.configService.get<string>('NODE_ENV') === 'production'
-    //       ? 'none'
-    //       : 'strict',
-    //   httpOnly: true,
-    //   secure: this.configService.get<string>('NODE_ENV') === 'production',
-    // });
+    res.cookie('token', token, {
+      path: '/',
+      maxAge: 6048000000,
+      sameSite:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'none'
+          : 'strict',
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+    });
 
     return { user, token };
   }
