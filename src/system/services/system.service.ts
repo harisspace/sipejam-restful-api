@@ -106,7 +106,7 @@ export class SystemService {
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new NotFoundException('System not found, cannot delete');
+        throw new NotFoundException(err.message);
       }
       throw new InternalServerErrorException();
     }

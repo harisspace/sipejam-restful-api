@@ -80,7 +80,7 @@ model speeds1 {
   speed       Int
   created_at  DateTime @default(now()) @db.Timestamptz(6)
   updated_at  DateTime @default(now()) @db.Timestamptz(6)
-  systems     systems  @relation(fields: [iot_token], references: [iot_token], onDelete: NoAction, onUpdate: NoAction)
+  systems     systems  @relation(fields: [iot_token], references: [iot_token], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model speeds2 {
@@ -90,7 +90,7 @@ model speeds2 {
   speed       Int
   created_at  DateTime @default(now()) @db.Timestamptz(6)
   updated_at  DateTime @default(now()) @db.Timestamptz(6)
-  systems     systems  @relation(fields: [iot_token], references: [iot_token], onDelete: NoAction, onUpdate: NoAction)
+  systems     systems  @relation(fields: [iot_token], references: [iot_token], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model vehicles1 {
@@ -100,7 +100,7 @@ model vehicles1 {
   vehicle          Int
   created_at       DateTime @default(now()) @db.Timestamptz(6)
   updated_at       DateTime @default(now()) @db.Timestamptz(6)
-  systems          systems @relation(fields: [iot_token], references: [iot_token],onDelete: NoAction, onUpdate: NoAction)
+  systems          systems @relation(fields: [iot_token], references: [iot_token],onDelete: Cascade, onUpdate: NoAction)
 }
 
 model vehicles2 {
@@ -110,7 +110,7 @@ model vehicles2 {
   vehicle         Int
   created_at      DateTime @default(now()) @db.Timestamptz(6)
   updated_at      DateTime @default(now()) @db.Timestamptz(6)
-  systems         systems @relation(fields: [iot_token], references: [iot_token], onDelete: NoAction, onUpdate: NoAction)
+  systems         systems @relation(fields: [iot_token], references: [iot_token], onDelete: Cascade, onUpdate: NoAction)
 }
 
 enum role {

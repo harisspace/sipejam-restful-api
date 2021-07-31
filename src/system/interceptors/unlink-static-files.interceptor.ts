@@ -16,6 +16,36 @@ import { join } from 'path';
 export class UnlinkStaticFilesInterceptor implements NestInterceptor {
   constructor(private readonly prisma: PrismaService) {}
 
+  unlinkStaticFileSystem(system_image_path: string) {
+    try {
+      fs.unlink(
+        join(process.cwd(), 'client', 'images', system_image_path),
+        (err) => {
+          if (err) throw new InternalServerErrorException();
+          console.log('image deleted');
+        },
+      );
+    } catch (err) {
+      return;
+    }
+  }
+
+  unlinkStaticFileUser(user_image_path: string) {
+    if (user_image_path === 'user.jpg') return;
+
+    try {
+      fs.unlink(
+        join(process.cwd(), 'client', 'images', user_image_path),
+        (err) => {
+          if (err) throw new InternalServerErrorException();
+          console.log('image deleted');
+        },
+      );
+    } catch (err) {
+      return;
+    }
+  }
+
   async intercept(
     context: ExecutionContext,
     next: CallHandler,
@@ -25,58 +55,39 @@ export class UnlinkStaticFilesInterceptor implements NestInterceptor {
     const { system_uid, user_uid } = request.params;
     console.log(system_uid, user_uid, request.method);
     if (system_uid) {
+      // if update system and have file image
       if (fileImage) {
-        const system = await this.prisma.systems.findUnique({
+        const { image_uri } = await this.prisma.systems.findUnique({
           where: { system_uid },
+          select: { image_uri: true },
         });
-        fs.unlink(
-          join(process.cwd(), 'client', 'images', system.image_uri),
-          (err) => {
-            if (err) throw new InternalServerErrorException();
-            console.log('image deleted');
-          },
-        );
+        this.unlinkStaticFileSystem(image_uri);
       }
 
       if (request.method === 'DELETE') {
-        const system = await this.prisma.systems.findUnique({
+        const { image_uri } = await this.prisma.systems.findUnique({
           where: { system_uid },
+          select: { image_uri: true },
         });
-        fs.unlink(
-          join(process.cwd(), 'client', 'images', system.image_uri),
-          (err) => {
-            if (err) throw new InternalServerErrorException();
-            console.log('image deleted');
-          },
-        );
+        this.unlinkStaticFileSystem(image_uri);
       }
     }
 
     if (user_uid) {
       if (fileImage) {
-        const user = await this.prisma.users.findUnique({
+        const { image_uri } = await this.prisma.users.findUnique({
           where: { user_uid },
+          select: { image_uri: true },
         });
-        fs.unlink(
-          join(process.cwd(), 'client', 'images', user.image_uri),
-          (err) => {
-            if (err) throw new InternalServerErrorException();
-            console.log('image deleted');
-          },
-        );
+        this.unlinkStaticFileUser(image_uri);
       }
 
-      if (request.method == 'delete') {
-        const user = await this.prisma.users.findUnique({
+      if (request.method == 'DELETE') {
+        const { image_uri } = await this.prisma.users.findUnique({
           where: { user_uid },
+          select: { image_uri: true },
         });
-        fs.unlink(
-          join(process.cwd(), 'client', 'images', user.image_uri),
-          (err) => {
-            if (err) throw new InternalServerErrorException();
-            console.log('image deleted');
-          },
-        );
+        this.unlinkStaticFileUser(image_uri);
       }
     }
 
