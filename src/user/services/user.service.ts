@@ -238,9 +238,7 @@ export class UserService {
   }
 
   async googleOAuthService(code: string) {
-    const {
-      data: { access_token },
-    } = await this.httpService
+    const { access_token } = await this.httpService
       .post(`https://oauth2.googleapis.com/token`, {
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
@@ -248,15 +246,23 @@ export class UserService {
         grant_type: 'authorization_code',
         code,
       })
-      .toPromise();
+      .toPromise()
+      .then((res) => res.data)
+      .catch((err) => {
+        throw new InternalServerErrorException(err.response);
+      });
 
     if (!access_token) throw new ForbiddenException();
 
-    const { data: user } = await this.httpService // e.g {id,email, name, given_name, family_name, picture, locale}
+    const { user } = await this.httpService // e.g {id,email, name, given_name, family_name, picture, locale}
       .get('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${access_token}` },
       })
-      .toPromise();
+      .toPromise()
+      .then((res) => res.data)
+      .catch((err) => {
+        throw new InternalServerErrorException(err.response);
+      });
 
     if (!user) throw new ForbiddenException();
     console.log(user);
