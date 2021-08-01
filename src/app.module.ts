@@ -1,4 +1,3 @@
-import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -7,12 +6,16 @@ import configuration from './config/configuration';
 import { EventsModule } from './events/events.module';
 import { SystemModule } from './system/system.module';
 import { UserModule } from './user/user.module';
+import { EmailModule } from './utils/email/email.module';
+import { OAuth2Module } from './utils/OAuth2/oauth2.module';
 
 @Module({
   imports: [
     UserModule,
     SystemModule,
     EventsModule,
+    EmailModule,
+    OAuth2Module,
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
@@ -20,21 +23,6 @@ import { UserModule } from './user/user.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client'),
       exclude: ['/v1*'],
-    }),
-    MailerModule.forRoot({
-      transport: {
-        pool: true,
-        host: 'smtp.gmail.com',
-        service: 'gmail',
-        port: 465,
-        auth: {
-          user: process.env.HOST_EMAIL,
-          pass: process.env.HOST_EMAIL_PASSWORD,
-        },
-      },
-      defaults: {
-        from: '"nest-modules" <modules@nestjs.com>',
-      },
     }),
   ],
 })

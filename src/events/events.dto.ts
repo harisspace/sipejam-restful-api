@@ -8,6 +8,7 @@ export class CreateSpeed1Dto {
   @IsNotEmpty()
   speed: number;
 }
+
 export class CreateSpeed2Dto {
   @IsNotEmpty()
   @IsString()
@@ -16,6 +17,7 @@ export class CreateSpeed2Dto {
   @IsNotEmpty()
   speed: number;
 }
+
 export class CreateVehicle1Dto {
   @IsNotEmpty()
   @IsString()
@@ -24,6 +26,7 @@ export class CreateVehicle1Dto {
   @IsNotEmpty()
   vehicle: number;
 }
+
 export class CreateVehicle2Dto {
   @IsNotEmpty()
   @IsString()
@@ -31,4 +34,22 @@ export class CreateVehicle2Dto {
 
   @IsNotEmpty()
   vehicle: number;
+}
+
+export class CreateSmallVehicle1Dto {
+  @IsNotEmpty()
+  @IsString()
+  iot_token: string;
+
+  @IsNotEmpty()
+  small_vehicle: number;
+}
+
+export class CreateSmallVehicle2Dto {
+  @IsNotEmpty()
+  @IsString()
+  iot_token: string;
+
+  @IsNotEmpty()
+  small_vehicle: number;
 }

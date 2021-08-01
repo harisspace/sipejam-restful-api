@@ -8,7 +8,11 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { SpeedData, VehicleData } from 'src/interface/event.interface';
+import {
+  SmallVehicleData,
+  SpeedData,
+  VehicleData,
+} from 'src/interface/event.interface';
 import { PrismaService } from 'src/prisma.service';
 import * as WebSocket from 'ws';
 import { IotTokenGuard } from './guards/iot-token.guard';
@@ -163,6 +167,60 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if ((value as WebSocket).readyState === WebSocket.OPEN) {
           (value as WebSocket).send(
             JSON.stringify({ data, event: 'vehicle_2' }),
+          );
+        }
+      }
+    }
+  }
+
+  @DataTypeRoles('small_vehicle')
+  @UseGuards(IotTokenGuard, DataTypeGuard)
+  @SubscribeMessage('small_vehicle_1')
+  async onEventSmallVehicle1(
+    @MessageBody() data: SmallVehicleData,
+    @ConnectedSocket() socket: any,
+  ) {
+    const { system_uid } = socket;
+
+    // save to db
+    this.eventsService.createSmallVehicle1(data);
+
+    // send to esp32 or jetson nano
+    socket.send(JSON.stringify({ data, event: 'small_vehicle_1' }));
+
+    // broadcast to room when client web already exist
+    if (this.rooms[system_uid]) {
+      for (const [_, value] of Object.entries(this.rooms[system_uid])) {
+        if ((value as WebSocket).readyState === WebSocket.OPEN) {
+          (value as WebSocket).send(
+            JSON.stringify({ data, event: 'small_vehicle_1' }),
+          );
+        }
+      }
+    }
+  }
+
+  @DataTypeRoles('small_vehicle')
+  @UseGuards(IotTokenGuard, DataTypeGuard)
+  @SubscribeMessage('small_vehicle_2')
+  async onEventSmallVehicle2(
+    @MessageBody() data: SmallVehicleData,
+    @ConnectedSocket() socket: any,
+  ) {
+    const { system_uid } = socket;
+
+    // save to db
+    this.eventsService.createSmallVehicle2(data);
+
+    // send to esp32 or jetson nano
+    socket.send(JSON.stringify({ data, event: 'small_vehicle_2' }));
+
+    // broadcast to room when client web already exist
+    if (this.rooms[system_uid]) {
+      for (const [_, value] of Object.entries(this.rooms[system_uid])) {
+        if ((value as WebSocket).readyState === WebSocket.OPEN) {
+          (value as WebSocket).send(
+            JSON.stringify({ data, event: 'small_vehicle_2' }),
           );
         }
       }

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import {
+  CreateSmallVehicle1Dto,
+  CreateSmallVehicle2Dto,
   CreateSpeed1Dto,
   CreateSpeed2Dto,
   CreateVehicle1Dto,
@@ -30,5 +32,13 @@ export class EventsService {
     await this.prisma.vehicles2.create({
       data,
     });
+  }
+
+  async createSmallVehicle1(data: CreateSmallVehicle1Dto) {
+    await this.prisma.smallvehicles1.create({ data });
+  }
+
+  async createSmallVehicle2(data: CreateSmallVehicle2Dto) {
+    await this.prisma.smallvehicles2.create({ data });
   }
 }

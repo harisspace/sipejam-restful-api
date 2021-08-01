@@ -40,6 +40,8 @@ model systems {
   speeds2         speeds2[]
   vehicles1       vehicles1[]
   vehicles2       vehicles2[]
+  smallvehicles1  smallvehicles1[]
+  smallvehicles2  smallvehicles2[]
   usersystemlinks usersystemlinks[]
 }
 
@@ -108,6 +110,26 @@ model vehicles2 {
   vehicles2_uid   String   @unique @db.Uuid @default(uuid())
   iot_token       String   @db.VarChar(300)
   vehicle         Int
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @db.Timestamptz(6)
+  systems         systems @relation(fields: [iot_token], references: [iot_token], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model smallvehicles1 {
+  id              Int      @id @default(autoincrement())
+  smallvehicles1_uid   String   @unique @db.Uuid @default(uuid())
+  iot_token       String   @db.VarChar(300)
+  small_vehicle         Int
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @db.Timestamptz(6)
+  systems         systems @relation(fields: [iot_token], references: [iot_token], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model smallvehicles2 {
+  id              Int      @id @default(autoincrement())
+  smallvehicles2_uid   String   @unique @db.Uuid @default(uuid())
+  iot_token       String   @db.VarChar(300)
+  small_vehicle         Int
   created_at      DateTime @default(now()) @db.Timestamptz(6)
   updated_at      DateTime @default(now()) @db.Timestamptz(6)
   systems         systems @relation(fields: [iot_token], references: [iot_token], onDelete: Cascade, onUpdate: NoAction)

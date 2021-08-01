@@ -12,7 +12,7 @@ import { PrismaService } from 'src/prisma.service';
 import { SelectUser } from '../../interface/user.interface';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from './jwt.service';
-import { EmailService } from './email.service';
+import { EmailService } from '../../utils/email/email.service';
 import { HttpService } from '@nestjs/axios';
 
 @Injectable()
