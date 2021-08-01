@@ -128,6 +128,28 @@ export class SystemController {
     });
   }
 
+  @Get('smallvehicle1/:system_uid')
+  @Roles('admin', 'superadmin')
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
+  getAllSmallVehicle1Data(@Param('system_uid') system_uid: string) {
+    return this.systemService.getAllSmallVehicle1Data({
+      where: { system_uid },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
+  }
+
+  @Get('smallvehicle2/:system_uid')
+  @Roles('admin', 'superadmin')
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
+  getAllSmallVehicle2Data(@Param('system_uid') system_uid: string) {
+    return this.systemService.getAllSmallVehicle2Data({
+      where: { system_uid },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
+  }
+
   @Post('create')
   @Roles('superadmin')
   @UseGuards(AuthGuard, RolesGuard)
