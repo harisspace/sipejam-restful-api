@@ -197,25 +197,36 @@ export class UserService {
   }
 
   async updateUser(
-    data: Prisma.usersUpdateInput,
     userWhereUniqueInput: Prisma.usersWhereUniqueInput,
-    imageFile: Express.Multer.File,
-  ): Promise<users> {
-    let user: users;
+    data: Prisma.usersUpdateInput,
+  ) {
+    let user: Partial<users>;
     try {
-      user = imageFile
-        ? await this.prisma.users.update({
-            where: userWhereUniqueInput,
-            data: { ...data, image_uri: imageFile.filename },
-          })
-        : await this.prisma.users.update({
-            where: userWhereUniqueInput,
-            data,
-          });
+      user = await this.prisma.users.update({
+        where: userWhereUniqueInput,
+        data,
+        select: SelectUser,
+      });
     } catch (err) {
-      console.log(err);
       if (err instanceof Prisma.PrismaClientKnownRequestError)
         throw new ConflictException('Username or email already exist');
+      throw new InternalServerErrorException();
+    }
+    return user;
+  }
+
+  async uploadImageUser(
+    userWhereUniqueInput: Prisma.usersWhereUniqueInput,
+    imageFile: Express.Multer.File,
+  ) {
+    let user: Partial<users>;
+    try {
+      user = await this.prisma.users.update({
+        where: userWhereUniqueInput,
+        data: { image_uri: imageFile.filename },
+        select: SelectUser,
+      });
+    } catch (err) {
       throw new InternalServerErrorException();
     }
     return user;

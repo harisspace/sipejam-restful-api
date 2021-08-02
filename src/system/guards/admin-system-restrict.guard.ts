@@ -12,7 +12,7 @@ export class AdminSystemRestrictGuard implements CanActivate {
 
     try {
       await this.prisma.usersystemlinks.findFirst({
-        where: { user_uid, system_uid },
+        where: { AND: [{ user_uid }, { system_uid }] },
         rejectOnNotFound: true,
       });
     } catch (err) {

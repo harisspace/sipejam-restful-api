@@ -116,12 +116,11 @@ export class SystemService {
   async updateSystem(
     data: Prisma.systemsUpdateInput,
     systemWhereUniqueInput: Prisma.systemsWhereUniqueInput,
-    imageFile: Express.Multer.File,
   ) {
     let system: systems;
     try {
       system = await this.prisma.systems.update({
-        data: { ...data, image_uri: imageFile.filename },
+        data,
         where: systemWhereUniqueInput,
       });
     } catch (err) {
@@ -148,7 +147,9 @@ export class SystemService {
 
   async addAdmin(data: Prisma.usersystemlinksCreateManyInput) {
     const userSystemLinks = await this.prisma.usersystemlinks.findFirst({
-      where: data,
+      where: {
+        AND: [{ user_uid: data.user_uid }, { system_uid: data.system_uid }],
+      },
     });
     if (userSystemLinks)
       throw new ForbiddenException("You're already admin in this system");
@@ -292,5 +293,22 @@ export class SystemService {
       take,
       skip,
     });
+  }
+
+  async uploadImageSystem(
+    systemWhereUniqueInput: Prisma.systemsWhereUniqueInput,
+    imageFile: Express.Multer.File,
+  ) {
+    let system: systems;
+    try {
+      system = await this.prisma.systems.update({
+        where: systemWhereUniqueInput,
+        data: { image_uri: imageFile.filename },
+      });
+    } catch (err) {
+      throw new InternalServerErrorException();
+    }
+
+    return system;
   }
 }

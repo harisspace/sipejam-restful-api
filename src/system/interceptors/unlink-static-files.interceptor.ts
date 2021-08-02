@@ -17,33 +17,24 @@ export class UnlinkStaticFilesInterceptor implements NestInterceptor {
   constructor(private readonly prisma: PrismaService) {}
 
   unlinkStaticFileSystem(system_image_path: string) {
-    try {
-      fs.unlink(
-        join(process.cwd(), 'client', 'images', system_image_path),
-        (err) => {
-          if (err) throw new InternalServerErrorException();
-          console.log('image deleted');
-        },
-      );
-    } catch (err) {
-      return;
-    }
+    fs.unlink(
+      join(process.cwd(), 'client', 'images', system_image_path),
+      (err) => {
+        if (err) return;
+        console.log('image deleted');
+      },
+    );
   }
 
   unlinkStaticFileUser(user_image_path: string) {
     if (user_image_path === 'user.jpg') return;
 
-    try {
-      fs.unlink(
-        join(process.cwd(), 'client', 'images', user_image_path),
-        (err) => {
-          if (err) throw new InternalServerErrorException();
-          console.log('image deleted');
-        },
-      );
-    } catch (err) {
-      return;
-    }
+    fs.unlink(
+      join(process.cwd(), 'client', 'images', user_image_path),
+      (err) => {
+        if (err) return;
+      },
+    );
   }
 
   async intercept(

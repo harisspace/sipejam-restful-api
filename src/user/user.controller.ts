@@ -150,9 +150,17 @@ export class UserController {
   updateUser(
     @Param('user_uid', ParseUUIDPipe) user_uid: string,
     @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.userService.updateUser({ user_uid }, updateUserDto);
+  }
+
+  @Patch('upload/image/:user_uid')
+  @UseGuards(AuthGuard, OwnUserRestrictGuard)
+  async uploadImageUser(
+    @Param('user_uid', ParseUUIDPipe) user_uid: string,
     @UploadedFile() fileImage: Express.Multer.File,
   ) {
-    return this.userService.updateUser(updateUserDto, { user_uid }, fileImage);
+    return this.userService.uploadImageUser({ user_uid }, fileImage);
   }
 
   @Patch('notification/:notification_uid')

@@ -195,16 +195,21 @@ export class SystemController {
   @Patch('update/:system_uid')
   @Roles('superadmin', 'admin')
   @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
-  @UseInterceptors(FileInterceptor('image'), UnlinkStaticFilesInterceptor)
   updateSystem(
     @Param('system_uid') system_uid: string,
     @Body() updateSystemDto: UpdateSystemDto,
+  ) {
+    return this.systemService.updateSystem(updateSystemDto, { system_uid });
+  }
+
+  @Patch('upload/image/:system_uid')
+  @Roles('superadmin', 'admin')
+  @UseGuards(AuthGuard, RolesGuard, AdminSystemRestrictGuard)
+  @UseInterceptors(FileInterceptor('image'), UnlinkStaticFilesInterceptor)
+  async uploadImageSystem(
+    @Param('system_uid') system_uid: string,
     @UploadedFile() imageFile: Express.Multer.File,
   ) {
-    return this.systemService.updateSystem(
-      updateSystemDto,
-      { system_uid },
-      imageFile,
-    );
+    return this.systemService.uploadImageSystem({ system_uid }, imageFile);
   }
 }
