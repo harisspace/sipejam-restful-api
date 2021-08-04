@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { notifications, Prisma, users } from '@prisma/client';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../../prisma.service';
 import { SelectUser } from '../../interface/user.interface';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from './jwt.service';

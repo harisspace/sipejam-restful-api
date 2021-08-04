@@ -8,7 +8,7 @@ import {
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../../prisma.service';
 import * as fs from 'fs';
 import { join } from 'path';
 

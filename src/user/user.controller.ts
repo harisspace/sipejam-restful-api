@@ -24,13 +24,13 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { OwnUserRestrictGuard } from './guards/own-user-restrict.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UnlinkStaticFilesInterceptor } from 'src/system/interceptors/unlink-static-files.interceptor';
+import { UnlinkStaticFilesInterceptor } from '../system/interceptors/unlink-static-files.interceptor';
 
 @Controller('user')
 export class UserController {
   constructor(
-    private userService: UserService,
-    private configService: ConfigService,
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get()
