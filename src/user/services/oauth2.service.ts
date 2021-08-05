@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
@@ -20,12 +20,12 @@ export class OAuth2Service {
     });
   }
 
-  async getAccessTokenByRefreshToken() {
+  getAccessTokenByRefreshToken() {
     this.setCredential();
-    return await this.OAuth2Client.getAccessToken()
+    return this.OAuth2Client.getAccessToken()
       .then((res) => res.token)
       .catch((err) => {
-        throw new InternalServerErrorException(err.message);
+        console.log(err);
       });
   }
 }

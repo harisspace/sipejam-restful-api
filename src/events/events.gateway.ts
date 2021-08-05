@@ -13,7 +13,6 @@ import {
   SpeedData,
   VehicleData,
 } from 'src/interface/event.interface';
-import { PrismaService } from 'src/prisma.service';
 import * as WebSocket from 'ws';
 import { IotTokenGuard } from './guards/iot-token.guard';
 import { EventsService } from './services/events.service';
@@ -25,11 +24,7 @@ import { DataTypeGuard } from './guards/data.guard';
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private rooms = {};
   private leave: (roomUid: string) => void;
-  private uuid: string;
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly eventsService: EventsService,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @WebSocketServer()
   server: WebSocket.Server;
