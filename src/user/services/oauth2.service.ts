@@ -8,9 +8,9 @@ export class OAuth2Service {
   private OAuth2Client: OAuth2Client;
   constructor(private readonly configService: ConfigService) {
     this.OAuth2Client = new google.auth.OAuth2({
-      clientId: this.configService.get<string>('CLIENT_ID'),
-      clientSecret: this.configService.get<string>('CLIENT_SECRET'),
-      redirectUri: this.configService.get<string>('OAUTH_REDIRECT'),
+      clientId: this.configService.get<string>('CLIENT_ID_EMAIL'),
+      clientSecret: this.configService.get<string>('CLIENT_SECRET_EMAIL'),
+      redirectUri: this.configService.get<string>('OAUTH_REDIRECT_EMAIL'),
     });
   }
 
@@ -22,10 +22,10 @@ export class OAuth2Service {
 
   async getAccessTokenByRefreshToken() {
     this.setCredential();
-    try {
-      return await this.OAuth2Client.getAccessToken();
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
+    return await this.OAuth2Client.getAccessToken()
+      .then((res) => res.token)
+      .catch((err) => {
+        throw new InternalServerErrorException(err.message);
+      });
   }
 }

@@ -12,16 +12,15 @@ import { PrismaService } from '../../prisma.service';
 import { SelectUser } from '../../interface/user.interface';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from './jwt.service';
-import { EmailService } from '../../utils/email/email.service';
+import { MailService } from './mail.service';
 import { HttpService } from '@nestjs/axios';
-import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private emailService: EmailService,
+    private mailService: MailService,
     private httpService: HttpService,
   ) {}
 
@@ -110,7 +109,7 @@ export class UserService {
     });
 
     // send token from email
-    this.emailService.sendEmail(email, token);
+    this.mailService.sendEmail(email, token);
 
     // send response user
     return { ...userDB };
@@ -181,7 +180,7 @@ export class UserService {
     if (decodedFailed) throw new UnauthorizedException();
 
     // resend token to email
-    this.emailService.sendEmail(decodedToken.email, token);
+    this.mailService.sendEmail(decodedToken.email, token);
     return { success: true };
   }
 
