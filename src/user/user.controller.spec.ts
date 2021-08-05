@@ -1,6 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { request } from 'express';
 import { PrismaService } from '../prisma.service';
 import { JwtService } from './services/jwt.service';
 import { UserService } from './services/user.service';
@@ -13,7 +12,7 @@ describe('UserController', () => {
 
   const userTest = {
     id: 1,
-    user_uid: 'testuid',
+    user_uid: 'testUid',
     username: 'Haris Akbar',
     email: 'harisakbar04@gmail.com',
     user_role: 'user',
@@ -54,9 +53,30 @@ describe('UserController', () => {
     })),
     getUserNotification: jest
       .fn()
-      .mockImplementation(
-        (params: { where; take; include; orderBy? }) => notificationReturnTest,
-      ),
+      .mockImplementation((params: { where; take; include; orderBy? }) => [
+        notificationReturnTest,
+      ]),
+    createUser: jest.fn().mockImplementation((dto) => ({
+      id: Date.now(),
+      user_uid: Date.now(),
+      ...dto,
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    })),
+    signInUser: jest.fn().mockImplementation((dto) => ({
+      user: {
+        id: Date.now(),
+        user_uid: Date.now(),
+        ...dto,
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      },
+      token,
+    })),
+    deleteUser: jest.fn().mockImplementation(() => userTest),
+    updateUser: jest
+      .fn()
+      .mockImplementation((where, data) => ({ ...data, ...userTest })),
   };
 
   beforeEach(async () => {
@@ -107,12 +127,14 @@ describe('UserController', () => {
       expect(await controller.resendEmail(token)).toEqual({ success: true });
     });
 
-    it('should return notification', async () => {
+    it('should return notifications', async () => {
       const user_uid = 'testToUid';
-      expect(await controller.getUserNotification(user_uid)).toEqual({
-        ...notificationReturnTest,
-        to_uid: user_uid,
-      });
+      expect(await controller.getUserNotification(user_uid)).toEqual([
+        {
+          ...notificationReturnTest,
+          to_uid: user_uid,
+        },
+      ]);
 
       expect(mockUserService.getUserNotification).toHaveBeenCalledWith({
         where: { to_uid: user_uid, read: false },
@@ -121,21 +143,67 @@ describe('UserController', () => {
         include: { users_notifications_from_uidTousers: true },
       });
     });
-
-    // it('should return user', () => {
-    //   const mockRequest = jest.fn().mockImplementation(() => userTest);
-    //   expect(controller.isUserLogin(mockRequest)).toEqual(userTest);
-    // });
   });
 
   describe('POST Method', () => {
-    it('should set cookie maxAge to expired', () => {
+    it('should create user', async () => {
+      const dto = {
+        username: 'harisakbar',
+        email: 'harisakbar04@gmail.com',
+        password: 'test12',
+      };
+      expect(controller.createUser(dto)).toEqual({
+        id: expect.any(Number),
+        user_uid: expect.any(Number),
+        ...dto,
+        created_at: expect.any(Number),
+        updated_at: expect.any(Number),
+      });
+      expect(mockUserService.createUser).toHaveBeenCalledWith(dto);
+    });
+
+    it('should find user exist and match password and set cookie token', async () => {
+      const dto = {
+        email: 'harisakbar04@gmail.com',
+        password: 'test12',
+      };
       const mockResponse: any = {
-        cookie: jest.fn().mockImplementation(() => ({ success: true })),
+        cookie: jest.fn(() => ({})),
+      };
+      expect(await controller.signInUser(mockResponse, dto)).toEqual({
+        id: expect.any(Number),
+        user_uid: expect.any(Number),
+        ...dto,
+        created_at: expect.any(Number),
+        updated_at: expect.any(Number),
+      });
+
+      expect(mockUserService.signInUser).toHaveBeenCalledWith(dto);
+    });
+
+    it('should be set cookie maxAge to expired', () => {
+      const mockResponse: any = {
+        cookie: jest.fn().mockImplementation(() => ({})),
       };
       expect(controller.signOutUser(mockResponse)).toEqual({ success: true });
     });
   });
 
-  // it('shoud')
+  describe('DELETE Method', () => {
+    it('should be delete user', async () => {
+      const user_uid = 'testUid';
+      expect(await controller.deleteUser(user_uid)).toEqual(userTest);
+    });
+  });
+
+  describe('PATCH Method', () => {
+    const user_uid = 'testUid';
+    const dto = {
+      username: 'budi',
+      email: 'budi@gmail.com',
+    };
+    it('should update user', async () => {
+      expect(await controller.updateUser(user_uid, dto)).toEqual(userTest);
+    });
+  });
 });

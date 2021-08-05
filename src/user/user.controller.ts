@@ -51,8 +51,12 @@ export class UserController {
 
   @Get('oauth/google/confirmation')
   @UseInterceptors()
-  async googleOAuth(@Query('code') code: string, @Res() res: Response) {
+  async googleOAuth(
+    @Query('code') code: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { user, token } = await this.userService.googleOAuthService(code);
+    console.log(user, token);
 
     res.cookie('token', token, {
       path: '/',

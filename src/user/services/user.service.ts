@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from './jwt.service';
 import { EmailService } from '../../utils/email/email.service';
 import { HttpService } from '@nestjs/axios';
+import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 
 @Injectable()
 export class UserService {
@@ -265,17 +266,20 @@ export class UserService {
 
     if (!access_token) throw new ForbiddenException();
 
-    const { user } = await this.httpService // e.g {id,email, name, given_name, family_name, picture, locale}
+    const user = await this.httpService // e.g {id,email, name, given_name, family_name, picture, locale}
       .get('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${access_token}` },
       })
       .toPromise()
-      .then((res) => res.data)
+      .then((res) => {
+        return res.data;
+      })
       .catch((err) => {
         throw new InternalServerErrorException(err.response);
       });
 
     if (!user) throw new ForbiddenException();
+
     console.log(user);
 
     // generate token
@@ -295,6 +299,7 @@ export class UserService {
     // if user not in DB and create that in db
     let userDB: Partial<users>;
     if (!isUserInDB) {
+      console.log('in');
       // generate password
       const salt = await bcrypt.genSalt(10);
       const password = await bcrypt.hash(name, salt);
@@ -319,7 +324,7 @@ export class UserService {
       user_uid,
       email: emailUserDB,
       image_uri,
-    } = userDB;
+    } = userDB || isUserInDB;
 
     const token = this.jwtService.signToken({
       username,
