@@ -130,9 +130,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { system_uid, client_uid } = socket;
 
     if (meta === 'join') {
-      if (!this.systemRooms[system_uid]) this.systemRooms[system_uid];
+      if (!this.systemRooms[system_uid]) this.systemRooms[system_uid] = {};
       if (!this.systemRooms[system_uid][client_uid]) {
-        this.systemRooms[system_uid][client_uid];
+        this.systemRooms[system_uid][client_uid] = socket;
       }
       console.log('system', this.systemRooms);
       socket.send(
