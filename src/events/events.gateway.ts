@@ -46,13 +46,16 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.systemLeave = (roomUid: string) => {
       if (!this.systemRooms[roomUid][client.client_uid]) return;
       console.log('leave room system', client.client_uid);
-      delete this.rooms[roomUid][client.client_uid];
+      delete this.systemRooms[roomUid][client.client_uid];
     };
   }
 
   handleDisconnect() {
     for (const roomUid of Object.keys(this.rooms)) {
       this.leave(roomUid);
+    }
+    for (const roomUid of Object.keys(this.systemRooms)) {
+      this.systemLeave(roomUid);
     }
   }
 
@@ -126,6 +129,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!this.systemRooms[system_uid][client_uid]) {
         this.systemRooms[system_uid][client_uid];
       }
+      console.log('system', this.systemRooms);
       socket.send(
         JSON.stringify({
           event: 'from_web',
