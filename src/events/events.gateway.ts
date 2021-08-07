@@ -23,7 +23,9 @@ import { DataTypeGuard } from './guards/data.guard';
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private rooms = {};
+  private systemRooms = {};
   private leave: (roomUid: string) => void;
+  private systemLeave: (roomUid: string) => void;
   constructor(private readonly eventsService: EventsService) {}
 
   @WebSocketServer()
@@ -40,6 +42,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       delete this.rooms[roomUid][client.client_uid];
     };
+
+    this.systemLeave = (roomUid: string) => {
+      if (!this.systemRooms[roomUid][client.client_uid]) return;
+      console.log('leave room system', client.client_uid);
+      delete this.rooms[roomUid][client.client_uid];
+    };
   }
 
   handleDisconnect() {
@@ -50,7 +58,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(IotTokenGuard)
   @SubscribeMessage('web_client')
-  async onEventJoin(@MessageBody() data: any, @ConnectedSocket() socket: any) {
+  async onEventWebClient(
+    @MessageBody() data: any,
+    @ConnectedSocket() socket: any,
+  ) {
     const { meta } = data;
     const { system_uid, client_uid } = socket;
 
@@ -61,6 +72,68 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     } else if (meta === 'leave') {
       this.leave(system_uid);
+    }
+
+    // send to esp32 or jetson nano
+    if (meta === 'power') {
+      const { value: powerValue } = data;
+      // broadcast to eps32 or jetson nano rooms;
+      if (this.systemRooms[system_uid]) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const [_, value] of Object.entries(this.systemRooms[system_uid])) {
+          if ((value as WebSocket).readyState === WebSocket.OPEN) {
+            (value as WebSocket).send(
+              JSON.stringify({
+                event: 'from_web',
+                data: { meta, value: powerValue },
+              }),
+            );
+          }
+        }
+      }
+    }
+
+    if (meta === 'lamp') {
+      const { value: lampValue } = data;
+      // broadcast to eps32 or jetson nano rooms;
+      if (this.systemRooms[system_uid]) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const [_, value] of Object.entries(this.systemRooms[system_uid])) {
+          if ((value as WebSocket).readyState === WebSocket.OPEN) {
+            (value as WebSocket).send(
+              JSON.stringify({
+                event: 'from_web',
+                data: { meta, value: lampValue },
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+
+  @UseGuards(IotTokenGuard)
+  @SubscribeMessage('system')
+  async onEventSystem(
+    @MessageBody() data: any,
+    @ConnectedSocket() socket: any,
+  ) {
+    const { meta } = data;
+    const { system_uid, client_uid } = socket;
+
+    if (meta === 'join') {
+      if (!this.systemRooms[system_uid]) this.systemRooms[system_uid];
+      if (!this.systemRooms[system_uid][client_uid]) {
+        this.systemRooms[system_uid][client_uid];
+      }
+      socket.send(
+        JSON.stringify({
+          event: 'from_web',
+          data: { meta, value: 'success' },
+        }),
+      );
+    } else if (meta === 'leave') {
+      this.systemLeave(system_uid);
     }
   }
 
