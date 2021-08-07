@@ -35,7 +35,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.client_uid = uuidV4();
 
     this.leave = (roomUid: string) => {
-      if (!this.rooms[roomUid][client.client_uid]) return;
+      if (!this.rooms[roomUid][client.client_uid] && !this.rooms[roomUid])
+        return;
 
       // leave room
       console.log('leave room', client.client_uid);
@@ -44,7 +45,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     };
 
     this.systemLeave = (roomUid: string) => {
-      if (!this.systemRooms[roomUid][client.client_uid]) return;
+      if (
+        !this.systemRooms[roomUid][client.client_uid] &&
+        !this.systemRooms[roomUid]
+      )
+        return;
       console.log('leave room system', client.client_uid);
       delete this.systemRooms[roomUid][client.client_uid];
     };
