@@ -60,7 +60,7 @@ export class UserController {
 
     res.cookie('token', token, {
       path: '/',
-      maxAge: 6048000000,
+      maxAge: new Date().getTime() + 60 * 60 * 24 * 1000,
       sameSite:
         this.configService.get<string>('NODE_ENV') === 'production'
           ? 'none'
@@ -81,9 +81,8 @@ export class UserController {
         this.configService.get<string>('NODE_ENV') === 'production'
           ? 'none'
           : 'strict',
-      httpOnly: false,
+      httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
-      domain: 'sipejam-restfullapi.herokuapp.com',
     });
 
     return { success: true };
@@ -130,12 +129,12 @@ export class UserController {
     // set cookie
     res.cookie('token', token, {
       path: '/',
-      maxAge: 6048000000,
+      maxAge: new Date().getTime() + 60 * 60 * 24 * 1000,
       sameSite:
         this.configService.get<string>('NODE_ENV') === 'production'
           ? 'none'
           : 'strict',
-      httpOnly: false,
+      httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
     });
     return user;
