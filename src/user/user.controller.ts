@@ -74,7 +74,7 @@ export class UserController {
 
   @Post('signout')
   signOutUser(@Res({ passthrough: true }) res: Response) {
-    res.cookie('token', '', {
+    res.cookie('token', 'value', {
       path: '/',
       maxAge: 0,
       sameSite:
