@@ -6,8 +6,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { notifications, Prisma, systems } from '@prisma/client';
-import { PrismaService } from 'src/prisma.service';
+import { Prisma, systems } from '@prisma/client';
+import { PrismaService } from '../../prisma.service';
 
 @Injectable()
 export class SystemService {

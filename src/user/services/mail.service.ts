@@ -27,7 +27,7 @@ export class MailService {
     });
   }
 
-  async sendEmail(destination: string, token?: string) {
+  async sendEmail(destination: string, token: string) {
     await this.createTransport();
     this.transporter.sendMail({
       to: destination,

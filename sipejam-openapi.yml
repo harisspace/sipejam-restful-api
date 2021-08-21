@@ -1,0 +1,64 @@
+openapi: '3.0.2'
+info:
+  title: SIPEJAM RESTful API
+  version: '1.0.0'
+  termsOfService: sipejamunandlicenseurl
+  contact:
+    name: Haris Akbar
+    email: harisakbar04@gmail.com
+    url: https://github.com/harisspace
+  description: OpenAPI for sipejamunand RESTful API
+  license:
+    name: sipejamunand license
+servers:
+  - url: https://sipejam-restfullapi.herokuapp.com/api/v1
+    description: Server Environment (prod)
+  - url: https://api.sipejamunand.com
+    description: Server Environment (dev)
+paths:
+  # user controller
+  /users:
+    get:
+      summary: Get all users
+      description: Get all users with confirmed true, return 20 user order by created_at descending
+      responses:
+        '200':
+          description: OK
+  /profile/{userUid}:
+    get:
+      summary: Get user
+      description: Get specific user by path
+      parameters:
+        - name: userUid
+          in: path
+          required: true
+          description: Get specific user by user_uid
+          schema: 
+            type: string
+      responses:
+        '200':
+          description: OK
+          
+  /signin:
+    post:
+      summary: Signin user
+      description: Set cookie to response with jwt token, in 1 day expired token
+      responses: 
+        '201':
+          description: OK
+
+  /signup:
+    post:
+      summary: Signup user
+      description: Create new user with unique email and username, and will send email for verification
+      responses:
+        '201':
+          description: OK
+  /signout:
+    post:
+      summary: Signout user
+      description: Destroy user cookie with name token
+      responses:
+        '201':
+          description: OK
+  

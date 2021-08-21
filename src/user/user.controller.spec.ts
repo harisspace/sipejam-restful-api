@@ -77,6 +77,12 @@ describe('UserController', () => {
     updateUser: jest
       .fn()
       .mockImplementation((where, data) => ({ ...data, ...userTest })),
+    uploadImageUser: jest
+      .fn()
+      .mockImplementation((userWhereUniqueInput, imageFile) => userTest),
+    readNotificationTrue: jest
+      .fn()
+      .mockImplementation((notification_uid, read) => notificationReturnTest),
   };
 
   beforeEach(async () => {
@@ -202,8 +208,23 @@ describe('UserController', () => {
       username: 'budi',
       email: 'budi@gmail.com',
     };
+
     it('should update user', async () => {
       expect(await controller.updateUser(user_uid, dto)).toEqual(userTest);
+    });
+
+    it('should upload image user', async () => {
+      const user_uid = 'testUid';
+      const mockImageFile: any = jest.fn().mockImplementation(() => null);
+      expect(await controller.uploadImageUser(user_uid, mockImageFile)).toEqual(
+        userTest,
+      );
+    });
+
+    it('should update notification read to true by user_uid', async () => {
+      const notification_uid = 'testUid';
+      const read = true;
+      expect(await controller.readNotificationTrue(read, notification_uid));
     });
   });
 });

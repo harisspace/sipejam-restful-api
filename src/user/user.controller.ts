@@ -56,7 +56,6 @@ export class UserController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const { user, token } = await this.userService.googleOAuthService(code);
-    console.log(user, token);
 
     res.cookie('token', token, {
       path: '/',
