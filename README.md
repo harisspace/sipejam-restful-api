@@ -13,7 +13,7 @@ The official  SIPEJAM RESTful API
 
 ## Documentation
 
-### List of Items
+### List of Events
 
 - speed_1
 - speed_2
