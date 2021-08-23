@@ -4,8 +4,8 @@ The official  SIPEJAM RESTful API
 ## **Structure**
 | Codebase | Description |
 | -------- | ----------- |
-| sipejam-restful-api | [restful api](https://github.com/harisspace/sipejam-restful-api) |
-| sipejam-client | [nextjs client side](https://github.com/harisspace/sipejam-client) |
+| [sipejam-restful-api](https://github.com/harisspace/sipejam-restful-api) | restful api |
+| [sipejam-client](https://github.com/harisspace/sipejam-client) | nextjs client side |
 
 ---
 
