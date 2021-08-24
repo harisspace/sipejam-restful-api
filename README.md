@@ -5,7 +5,7 @@ The official  SIPEJAM RESTful API
 
 ## *[sipejamunand.com](https://sipejamunand.com)*
 
-## **Structure**
+# **Structure**
 | Codebase | Description |
 | -------- | ----------- |
 | [sipejam-restful-api](https://github.com/harisspace/sipejam-restful-api) | restful api |
@@ -15,7 +15,7 @@ The official  SIPEJAM RESTful API
 
 [DOCUMENTATION](#documentation)
 
-## Documentation
+# Documentation
 
 ### List of Events
 
